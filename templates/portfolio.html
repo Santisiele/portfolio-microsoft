@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Cartera{% endblock %}
+{% block main_class %}wide{% endblock %}
+{% block content %}
+  <h1>Cartera</h1>
+  <p class="sub">{{ rows|length }} registro(s)</p>
+  <a class="btn gris" href="{{ url_for('main.index') }}">← Volver</a>
+
+  {% if rows %}
+    <table>
+      <thead>
+        <tr>{% for col in rows[0].keys() %}<th>{{ col }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>{% for value in row.values() %}<td>{{ value if value is not none else "" }}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="empty">Sin resultados.</p>
+  {% endif %}
+{% endblock %}
