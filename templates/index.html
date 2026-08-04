@@ -1,21 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1>Cartera CRM</h1>
+  <h1 class="h3 mb-3">Cartera CRM</h1>
   {% if user %}
-    <div class="card">
-      <p>Sesión iniciada como <strong>{{ user.name or user.preferred_username }}</strong>.</p>
-      <p>Ya tenés el token del usuario disponible para consultar el CRM por SQL.</p>
-      <p>
-        <a class="btn" href="{{ url_for('portfolio.portfolio_table') }}">Ver cartera</a>
-        <a class="btn" href="{{ url_for('portfolio.portfolio_json') }}">Cartera (JSON)</a>
-        <a class="btn gris" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
-      </p>
+    <div class="card shadow-sm" style="max-width: 640px;">
+      <div class="card-body">
+        <p class="mb-1">Sesión iniciada como <strong>{{ user.name or user.preferred_username }}</strong>.</p>
+        <p class="text-muted">Ya tenés el token del usuario disponible para consultar el CRM por SQL.</p>
+        <a class="btn btn-primary" href="{{ url_for('portfolio.portfolio_table') }}">Ver cartera</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('portfolio.portfolio_json') }}">Cartera (JSON)</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
+      </div>
     </div>
   {% else %}
-    <div class="card">
-      <p>Iniciá sesión con tu cuenta de Microsoft para acceder a los datos del CRM.</p>
-      <a class="btn" href="{{ url_for('auth.login') }}">Iniciar sesión con Microsoft</a>
-      {% if error %}<p class="error">Error: {{ error }}</p>{% endif %}
+    <div class="card shadow-sm" style="max-width: 640px;">
+      <div class="card-body">
+        <p>Iniciá sesión con tu cuenta de Microsoft para acceder a los datos del CRM.</p>
+        <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Iniciar sesión con Microsoft</a>
+        {% if error %}<p class="text-danger mt-3 mb-0">Error: {{ error }}</p>{% endif %}
+      </div>
     </div>
   {% endif %}
 {% endblock %}

@@ -9,7 +9,7 @@ def test_consolidates_both_environments_with_origin(monkeypatch):
     rows = db.dataverse_sql_all("SELECT id, amount FROM x")
 
     assert len(rows) == 2
-    assert {r["origin"] for r in rows} == {"DHF", "CONFINANCE"}
+    assert {r["Origen"] for r in rows} == {"DHF", "CONFINANCE"}
 
 
 def test_retries_on_08S01(monkeypatch):

@@ -1,14 +1,13 @@
 PORTFOLIO = """
 SELECT
-    gval_firmanteunocargarapida     AS firmante,
-    gval_firmanteunocuitcargarapida AS cuit_librador,
-    gval_fechavaloroperacioncompra  AS fecha_compra,
-    gval_fechapago                  AS fecha_pago,
-    gval_importe                    AS importe,
-    gval_empresaname                AS cliente,
-    gval_chequeid                   AS id,
-    statuscodename                  AS estado,
-    gval_cuentapropiadestinoname    AS cuenta_destino
+    gval_firmanteunocargarapida     AS Firmante,
+    gval_firmanteunocuitcargarapida AS 'Cuit Librador',
+    gval_fechavaloroperacioncompra  AS 'Fecha Compra',
+    gval_fechapago                  AS 'Fecha Pago',
+    gval_importe                    AS Importe,
+    gval_empresaname                AS Cliente,
+    statuscodename                  AS Estado,
+    gval_cuentapropiadestinoname    AS 'Cuenta Destino'
 FROM gval_cheque
 WHERE gval_fechapago >= DATEADD(day, -10, CAST(GETDATE() AS date))
   AND statuscodename IN (

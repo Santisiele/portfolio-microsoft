@@ -27,11 +27,11 @@ def test_portfolio_redirects_without_login(client):
 def test_portfolio_json_with_login(client, monkeypatch):
     import routes.portfolio as rp
     monkeypatch.setattr(rp, "dataverse_sql_all",
-                        lambda q: [{"id": "1", "amount": 100, "origin": "DHF"}])
+                        lambda q: [{"id": "1", "amount": 100, "Origen": "DHF"}])
     _login(client)
 
     r = client.get("/portfolio")
     assert r.status_code == 200
     data = r.get_json()
     assert data["count"] == 1
-    assert data["data"][0]["origin"] == "DHF"
+    assert data["data"][0]["Origen"] == "DHF"

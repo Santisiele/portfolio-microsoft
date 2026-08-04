@@ -1,23 +1,40 @@
 {% extends "base.html" %}
 {% block title %}Cartera{% endblock %}
-{% block main_class %}wide{% endblock %}
+{% block main_class %}container-fluid px-4 py-4{% endblock %}
 {% block content %}
-  <h1>Cartera</h1>
-  <p class="sub">{{ rows|length }} registro(s)</p>
-  <a class="btn gris" href="{{ url_for('main.index') }}">← Volver</a>
+  <div class="d-flex align-items-baseline gap-3 mb-2">
+    <h1 class="h3 mb-0">Cartera</h1>
+    <span class="text-muted small">{{ rows|length }} registros</span>
+  </div>
+  <a class="btn btn-outline-secondary btn-sm mb-3" href="{{ url_for('main.index') }}">← Volver</a>
+
+  {% set right_cols = ["Importe"] %}
+  {% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Pago", "Fecha Acr.", "Estado", "Cuenta Destino", "origin"] %}
 
   {% if rows %}
-    <table>
-      <thead>
-        <tr>{% for col in rows[0].keys() %}<th>{{ col }}</th>{% endfor %}</tr>
-      </thead>
-      <tbody>
-        {% for row in rows %}
-          <tr>{% for value in row.values() %}<td>{{ value if value is not none else "" }}</td>{% endfor %}</tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+        <table class="table table-sm table-striped table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              {% for col in rows[0].keys() %}
+                <th class="{% if col in right_cols %}text-end{% elif col in center_cols %}text-center{% endif %}">{{ col }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                {% for col, value in row.items() %}
+                  <td class="{% if col in right_cols %}text-end{% elif col in center_cols %}text-center{% endif %}">{{ value if value is not none else "" }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   {% else %}
-    <p class="empty">Sin resultados.</p>
+    <p class="text-muted">Sin resultados.</p>
   {% endif %}
 {% endblock %}

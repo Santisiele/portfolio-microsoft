@@ -56,7 +56,7 @@ def dataverse_sql(query: str, env: str, params=None) -> list[dict]:
     raise RuntimeError(f"{env} TDS dropped the connection after {RETRIES} retries. Last error: {last}")
 
 
-def dataverse_sql_all(query: str, params=None, origin_column: str = "origin") -> list[dict]:
+def dataverse_sql_all(query: str, params=None, origin_column: str = "Origen") -> list[dict]:
     rows = []
     for env in ENVIRONMENTS:
         for row in dataverse_sql(query, env, params):
