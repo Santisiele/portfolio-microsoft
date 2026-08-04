@@ -10,7 +10,9 @@ SELECT
     statuscodename                  AS estado,
     gval_cuentapropiadestinoname    AS cuenta_destino
 FROM gval_cheque
-WHERE statuscodename IN (
+WHERE gval_fechapago >= DATEADD(day, -10, CAST(GETDATE() AS date))
+  AND statuscodename IN (
     'Pendiente de pago', 'En cartera', 'Pendiente', 'Vendido', 'Depositado'
 )
+ORDER BY gval_fechapago
 """
