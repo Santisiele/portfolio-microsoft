@@ -9,3 +9,14 @@
   white-space: nowrap;
   background: var(--bs-light);
 }
+
+.table thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.table thead th.sortable:hover {
+  background: var(--bs-secondary-bg);
+}
+.sort-ind {
+  margin-left: 0.25rem;
+}

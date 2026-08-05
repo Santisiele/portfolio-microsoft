@@ -23,8 +23,6 @@ def format_amounts(rows, columns=AMOUNT_COLUMNS):
                 row[col] = f"{float(value):,.2f}"
     return rows
 
-CUIT_COLUMNS = ["Cuit Librador"]
-
 
 def format_cuits(rows, columns=CUIT_COLUMNS):
     for row in rows:

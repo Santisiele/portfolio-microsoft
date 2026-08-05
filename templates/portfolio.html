@@ -2,31 +2,51 @@
 {% block title %}Cartera{% endblock %}
 {% block main_class %}container-fluid px-4 py-4{% endblock %}
 {% block content %}
-  <div class="d-flex align-items-baseline gap-3 mb-2">
-    <h1 class="h3 mb-0">Cartera</h1>
-    <span class="text-muted small">{{ rows|length }} registros</span>
+<div class="d-flex align-items-baseline gap-3 mb-2">
+  <h1 class="h3 mb-0">Cartera</h1>
+  <span class="text-muted small"><span id="count">{{ rows|length }}</span> registros</span>
+</div>
+
+<div class="row g-2 align-items-center mb-3">
+  <div class="col-auto">
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">← Volver</a>
   </div>
-  <a class="btn btn-outline-secondary btn-sm mb-3" href="{{ url_for('main.index') }}">← Volver</a>
+  <div class="col-12 col-md-4">
+    <input id="search" type="search" class="form-control form-control-sm" placeholder="Buscar…">
+  </div>
+  <div class="col-auto ms-md-auto">
+    <span class="text-muted small">Total:</span>
+    <strong id="total" class="ms-1">0.00</strong>
+  </div>
+</div>
 
-  {% set right_cols = ["Importe"] %}
-  {% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Pago", "Fecha Acr.", "Estado", "Cuenta Destino", "origin"] %}
+{% set columns = ["Cliente", "Fecha Acr.", "Fecha Compra", "Firmante", "Importe", "Cuit Librador", "Origen", "Estado"] %}
+{% set right_cols = ["Importe"] %}
+{% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Pago", "Fecha Acr.", "Estado", "Origen"]
+%}
 
-  {% if rows %}
+<span class="text-muted small">Click en el titulo de la columna deseada para ordenar</span>
+{% if rows %}
     <div class="card shadow-sm">
       <div class="card-body p-0">
         <table class="table table-sm table-striped table-hover align-middle mb-0">
+          {% set col_types = {"Importe": "number", "Fecha Compra": "date", "Fecha Pago": "date", "Fecha Acr.": "date"} %}
           <thead class="table-light">
             <tr>
               {% for col in rows[0].keys() %}
-                <th class="{% if col in right_cols %}text-end{% elif col in center_cols %}text-center{% endif %}">{{ col }}</th>
+                <th class="sortable {% if col in right_cols %}text-end{% elif col in center_cols %}text-center{% endif %}" data-type="{{ col_types.get(col, 'text') }}">{{ col }}<span class="sort-ind text-muted"></span></th>
               {% endfor %}
             </tr>
           </thead>
-          <tbody>
+          <tbody id="rows">
             {% for row in rows %}
-              <tr>
+              <tr data-amount="{{ row['Importe'] or 0 }}" data-text="{{ row.values() | join(' ') | lower }}">
                 {% for col, value in row.items() %}
-                  <td class="{% if col in right_cols %}text-end{% elif col in center_cols %}text-center{% endif %}">{{ value if value is not none else "" }}</td>
+                  {% if col == "Importe" %}
+                    <td class="text-end js-amount"></td>
+                  {% else %}
+                    <td class="{% if col in center_cols %}text-center{% endif %}">{{ value if value is not none else "" }}</td>
+                  {% endif %}
                 {% endfor %}
               </tr>
             {% endfor %}
@@ -37,4 +57,7 @@
   {% else %}
     <p class="text-muted">Sin resultados.</p>
   {% endif %}
+ 
+  <script src="{{ url_for('static', filename='js/portfolio.js') }}"></script>
 {% endblock %}
+ 
