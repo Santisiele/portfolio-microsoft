@@ -8,17 +8,33 @@ from domain.portfolio_transform import put_acreditation_date, eliminate_duplicat
 
 PORTFOLIO_STEPS = [put_acreditation_date, eliminate_duplicate_checks]
 
+COLUMN_MAP = {
+    "FIRMANTE":         "Firmante",
+    "CUIT Librador":    "Cuit Librador",
+    "Fecha Acr.":       "Fecha Acr.",
+    "Importe":          "Importe",
+    "Cliente":          "Cliente",
+    "Estado":           "Estado",
+    "Fecha Cpra.":      "Fecha Compra"
+}
 
-def _stock_market_rules(rows):
-    return rows
+def normalize_stock_market(rows):
+    result = []
+    for row in rows:
+        new = {canonical: row.get(sheet_col) for sheet_col, canonical in COLUMN_MAP.items()}
+        new["Origen"] = row.get("Origen")
+        result.append(new)
+    return result
 
+
+STOCK_MARKET_STEPS = [normalize_stock_market]
 
 PORTFOLIO_SOURCES = [
     Source("DHF",        lambda: read_tds("DHF", PORTFOLIO),               steps=PORTFOLIO_STEPS),
     Source("CONFINANCE", lambda: read_tds("CONFINANCE", PORTFOLIO),        steps=PORTFOLIO_STEPS),
-    Source("STOCK",      lambda: read_public_sheet(STOCK_MARKET_SHEET_URL), steps=[_stock_market_rules]),
+    Source("BOLSA", lambda: read_public_sheet(STOCK_MARKET_SHEET_URL),
+       steps=[normalize_stock_market, STOCK_MARKET_STEPS])
 ]
-
 
 def build_portfolio():
     return load_module(PORTFOLIO_SOURCES)
