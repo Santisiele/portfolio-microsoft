@@ -2,7 +2,7 @@ from flask import Blueprint, session, redirect, url_for, jsonify, render_templat
 
 from core import dataverse_sql_all
 from queries.portfolio import PORTFOLIO
-from domain.portfolio_transform import enrich_portfolio
+from domain.portfolio_transform import put_acreditation_date, eliminate_duplicate_checks
 from presentation import format_dates, format_cuits
 
 bp = Blueprint("portfolio", __name__)
@@ -27,7 +27,8 @@ def portfolio_table():
     if guard:
         return guard
     rows = dataverse_sql_all(PORTFOLIO)
-    rows = enrich_portfolio(rows)
+    rows = eliminate_duplicate_checks(rows)
+    rows = put_acreditation_date(rows)
     rows = format_dates(rows)
     rows = format_cuits(rows)
     return render_template("portfolio.html", rows=rows)

@@ -22,7 +22,7 @@
 
 {% set columns = ["Cliente", "Fecha Acr.", "Fecha Compra", "Firmante", "Importe", "Cuit Librador", "Origen", "Estado"] %}
 {% set right_cols = ["Importe"] %}
-{% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Pago", "Fecha Acr.", "Estado", "Origen"]
+{% set center_cols = ["Cliente", "Fecha Acr.", "Fecha Compra", "Firmante", "Cuit Librador", "Origen", "Estado"]
 %}
 
 <span class="text-muted small">Click en el titulo de la columna deseada para ordenar</span>
@@ -33,7 +33,7 @@
           {% set col_types = {"Importe": "number", "Fecha Compra": "date", "Fecha Pago": "date", "Fecha Acr.": "date"} %}
           <thead class="table-light">
             <tr>
-              {% for col in rows[0].keys() %}
+              {% for col in columns %}
                 <th class="sortable {% if col in right_cols %}text-end{% elif col in center_cols %}text-center{% endif %}" data-type="{{ col_types.get(col, 'text') }}">{{ col }}<span class="sort-ind text-muted"></span></th>
               {% endfor %}
             </tr>
@@ -41,11 +41,11 @@
           <tbody id="rows">
             {% for row in rows %}
               <tr data-amount="{{ row['Importe'] or 0 }}" data-text="{{ row.values() | join(' ') | lower }}">
-                {% for col, value in row.items() %}
+                {% for col in columns %}
                   {% if col == "Importe" %}
                     <td class="text-end js-amount"></td>
                   {% else %}
-                    <td class="{% if col in center_cols %}text-center{% endif %}">{{ value if value is not none else "" }}</td>
+                    <td class="{% if col in center_cols %}text-center{% endif %}">{{row[col] if row[col] is not none else "" }}</td>
                   {% endif %}
                 {% endfor %}
               </tr>
