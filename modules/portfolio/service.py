@@ -33,7 +33,7 @@ PORTFOLIO_SOURCES = [
     Source("DHF",        lambda: read_tds("DHF", PORTFOLIO),               steps=PORTFOLIO_STEPS),
     Source("CONFINANCE", lambda: read_tds("CONFINANCE", PORTFOLIO),        steps=PORTFOLIO_STEPS),
     Source("BOLSA", lambda: read_public_sheet(STOCK_MARKET_SHEET_URL),
-       steps=[normalize_stock_market, STOCK_MARKET_STEPS])
+       steps=STOCK_MARKET_STEPS)
 ]
 
 def build_portfolio():

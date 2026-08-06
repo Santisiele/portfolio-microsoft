@@ -7,7 +7,6 @@
         <p class="mb-1">Sesión iniciada como <strong>{{ user.name or user.preferred_username }}</strong>.</p>
         <p class="text-muted">Ya tenés el token del usuario disponible para consultar el CRM por SQL.</p>
         <a class="btn btn-primary" href="{{ url_for('portfolio.portfolio_table') }}">Ver cartera</a>
-        <a class="btn btn-outline-primary" href="{{ url_for('portfolio.portfolio_json') }}">Cartera (JSON)</a>
         <a class="btn btn-outline-secondary" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
       </div>
     </div>
