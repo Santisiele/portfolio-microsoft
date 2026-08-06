@@ -20,6 +20,8 @@ ENVIRONMENTS = {
     "CONFINANCE": os.environ.get("CONFINANCE_URL", "").rstrip("/"),
 }
 
+STOCK_MARKET_SHEET_URL = os.environ.get("STOCK_MARKET_SHEET_URL", "")
+
 def scope_for(url: str) -> str:
     return f"{url}/user_impersonation"
 
