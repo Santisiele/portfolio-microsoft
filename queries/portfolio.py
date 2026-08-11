@@ -11,7 +11,7 @@ SELECT
 FROM gval_cheque
 WHERE gval_fechapago >= DATEADD(day, -10, CAST(GETDATE() AS date))
   AND statuscodename IN (
-    'Pendiente de pago', 'En cartera', 'Pendiente', 'Vendido', 'Depositado'
+    'Pendiente de depósito', 'En cartera', 'Pendiente', 'Vendido', 'Depositado'
 )
 ORDER BY gval_fechapago
 """
