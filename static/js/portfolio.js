@@ -3,6 +3,8 @@
     cuit: document.getElementById("f-cuit"),
     firmante: document.getElementById("f-firmante"),
     cliente: document.getElementById("f-cliente"),
+    acrFrom: document.getElementById("f-acr-from"),
+    acrTo: document.getElementById("f-acr-to"),
     guaranteed: document.getElementById("guaranteed"),
     count: document.getElementById("count"),
     totalFixed: document.getElementById("total-fixed"),
@@ -39,8 +41,20 @@
     td.textContent = formatAmount(raw);
   });
 
+  const acrDates = rows.map((tr) => tr.dataset.acr).filter(Boolean).sort();
+  if (acrDates.length && els.acrFrom && els.acrTo) {
+    const minD = acrDates[0];
+    const maxD = acrDates[acrDates.length - 1];
+    els.acrFrom.value = minD;
+    els.acrTo.value = maxD;
+    els.acrFrom.min = minD;
+    els.acrFrom.max = maxD;
+    els.acrTo.min = minD;
+    els.acrTo.max = maxD;
+  }
+
   function isGuaranteed(tr) {
-    return tr.dataset.account === "5005" && tr.dataset.state === "Vendido";
+    return tr.dataset.account === "5006" && tr.dataset.state === "Vendido";
   }
 
   function selectedOrigins() {
@@ -64,6 +78,8 @@
     const cuitQ = onlyDigits(els.cuit.value);
     const firmanteQ = els.firmante.value.trim().toLowerCase();
     const clienteQ = els.cliente.value.trim().toLowerCase();
+    const acrFrom = els.acrFrom ? els.acrFrom.value : "";
+    const acrTo = els.acrTo ? els.acrTo.value : "";
     const origins = selectedOrigins();
     const states = selectedStates();
 
@@ -78,7 +94,9 @@
       const okCliente = !clienteQ || tr.dataset.cliente.indexOf(clienteQ) !== -1;
       const okOrigen = origins.length === 0 || origins.indexOf(tr.dataset.origen) !== -1;
       const okEstado = states.length === 0 || states.indexOf(tr.dataset.state) !== -1;
-      const show = inBase && okCuit && okFirmante && okCliente && okOrigen && okEstado;
+      const acr = tr.dataset.acr;
+      const okAcr = !acr || ((!acrFrom || acr >= acrFrom) && (!acrTo || acr <= acrTo));
+      const show = inBase && okCuit && okFirmante && okCliente && okOrigen && okEstado && okAcr;
       tr.style.display = show ? "" : "none";
       if (show) visible.push(tr);
     });
@@ -136,6 +154,9 @@
 
   [els.cuit, els.firmante, els.cliente].forEach(function (el) {
     if (el) el.addEventListener("input", apply);
+  });
+  [els.acrFrom, els.acrTo].forEach(function (el) {
+    if (el) el.addEventListener("change", apply);
   });
   if (els.guaranteed) els.guaranteed.addEventListener("change", apply);
   origenBoxes.forEach(function (b) { b.addEventListener("change", apply); });

@@ -12,11 +12,9 @@
   {% set origen_class = {"DHF": "origen-dhf", "CONFINANCE": "origen-confinance", "BOLSA": "origen-bolsa"} %}
   {% set estado_class = {
     "En cartera": "estado-en-cartera",
-    "CARTERA": "estado-en-cartera",
     "Pendiente": "estado-pendiente",
     "Pendiente de pago": "estado-pendiente-de-pago",
     "Vendido": "estado-vendido",
-    "VENDIDO": "estado-vendido",
     "Depositado": "estado-depositado"
   } %}
 
@@ -57,6 +55,15 @@
         <div>
           <label class="form-label small text-muted mb-1" for="f-cliente">Cliente</label>
           <input id="f-cliente" type="search" class="form-control form-control-sm" placeholder="Buscar cliente…" style="width: 12rem;">
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1 d-block">Fecha acr.</label>
+          <div class="d-flex align-items-center gap-1">
+            <input id="f-acr-from" type="date" class="form-control form-control-sm" style="width: 9.5rem;">
+            <span class="text-muted small">–</span>
+            <input id="f-acr-to" type="date" class="form-control form-control-sm" style="width: 9.5rem;">
+          </div>
         </div>
 
         <div>
@@ -109,7 +116,7 @@
       <div class="d-flex flex-wrap gap-4 mt-3 pt-3 border-top">
         <div>
           <div class="text-muted small">Total fijo</div>
-          <div class="fs-5 fw-semibold"><span id="total-fixed">0.00</span></div>
+          <div class="fs-5 fw-semibold">$ <span id="total-fixed">0.00</span></div>
         </div>
         <div>
           <div class="text-muted small">Total filtrado</div>
@@ -122,6 +129,7 @@
   </div>
 
   {% if rows %}
+  <span class="text-muted small">Click en los encabezados para ordenar por columna</span>
     <div class="card shadow-sm">
       <div class="card-body p-0">
         <table class="table table-sm table-striped table-hover align-middle mb-0">
@@ -135,6 +143,11 @@
           </thead>
           <tbody id="rows">
             {% for row in rows %}
+              {% set acr_iso = "" %}
+              {% if row["Fecha Acr."] and "/" in row["Fecha Acr."] %}
+                {% set _p = row["Fecha Acr."].split("/") %}
+                {% set acr_iso = _p[2] ~ "-" ~ _p[1] ~ "-" ~ _p[0] %}
+              {% endif %}
               <tr
                 data-amount="{{ row['Importe'] or 0 }}"
                 data-cuit="{{ row['Cuit Librador'] or '' }}"
@@ -142,7 +155,8 @@
                 data-cliente="{{ (row['Cliente'] or '')|lower }}"
                 data-origen="{{ row['Origen'] or '' }}"
                 data-account="{{ row['Cuenta Destino'] or '' }}"
-                data-state="{{ row['Estado'] or '' }}">
+                data-state="{{ row['Estado'] or '' }}"
+                data-acr="{{ acr_iso }}">
                 {% for col in columns %}
                   {% set value = row.get(col) %}
                   {% if col == "Importe" %}
