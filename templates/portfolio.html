@@ -13,7 +13,7 @@
   {% set estado_class = {
     "En cartera": "estado-en-cartera",
     "Pendiente": "estado-pendiente",
-    "Pendiente de pago": "estado-pendiente-de-pago",
+    "Pendiente de depósito": "estado-pendiente-de-deposito",
     "Vendido": "estado-vendido",
     "Depositado": "estado-depositado"
   } %}
@@ -61,7 +61,7 @@
           <label class="form-label small text-muted mb-1 d-block">Fecha acr.</label>
           <div class="d-flex align-items-center gap-1">
             <input id="f-acr-from" type="date" class="form-control form-control-sm" style="width: 9.5rem;">
-            <span class="text-muted small">–</span>
+            <span class="text-muted small">-</span>
             <input id="f-acr-to" type="date" class="form-control form-control-sm" style="width: 9.5rem;">
           </div>
         </div>
@@ -116,7 +116,7 @@
       <div class="d-flex flex-wrap gap-4 mt-3 pt-3 border-top">
         <div>
           <div class="text-muted small">Total fijo</div>
-          <div class="fs-5 fw-semibold">$ <span id="total-fixed">0.00</span></div>
+          <div class="fs-5 fw-semibold"><span id="total-fixed">0.00</span></div>
         </div>
         <div>
           <div class="text-muted small">Total filtrado</div>
