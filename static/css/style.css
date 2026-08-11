@@ -20,3 +20,84 @@
 .sort-ind {
   margin-left: 0.25rem;
 }
+
+.tag {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.total-pill {
+  display: inline-block;
+  padding: 0.1em 0.6em;
+  border-radius: 0.6rem;
+  background: #e9ecef;
+  color: #212529;
+}
+
+.origen-bolsa       { background: #753800; color: #fff; }
+.origen-confinance  { background: #BFE1F6; color: #10344a; }
+.origen-dhf         { background: #B10202; color: #fff; }
+
+.estado-en-cartera         { background: #7ec8e3; color: #0b3a4a; }
+.estado-pendiente          { background: #f4a6c6; color: #5a1533; }
+.estado-pendiente-de-pago  { background: #f4a6c6; color: #5a1533; }
+.estado-vendido            { background: #5b8def; color: #fff;    }
+.estado-depositado         { background: #3fa971; color: #fff;    }
+
+#loadbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: linear-gradient(90deg, #0d6efd, #6ea8fe);
+  z-index: 2000;
+  opacity: 0;
+  transition: width 0.2s ease, opacity 0.4s ease;
+}
+
+#sidemenu .nav-link {
+  color: var(--bs-body-color);
+}
+#sidemenu .nav-link:hover {
+  background: var(--bs-secondary-bg);
+}
+#sidemenu .nav-link.active {
+  background: var(--bs-primary);
+  color: #fff;
+}
+
+.menu-card {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  border: 1px solid var(--bs-border-color-translucent);
+}
+.menu-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.12) !important;
+}
+.menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.85rem;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.origen-menu {
+  min-width: 12rem;
+  padding: 0.5rem 0.75rem;
+}
+.origen-menu .form-check {
+  margin-bottom: 0.25rem;
+}
+.origen-menu .form-check:last-child {
+  margin-bottom: 0;
+}

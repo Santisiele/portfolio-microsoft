@@ -4,6 +4,12 @@ from decimal import Decimal
 DATE_COLUMNS = ["Fecha Compra", "Fecha Pago", "Fecha Acr."]
 AMOUNT_COLUMNS = ["Importe"]
 CUIT_COLUMNS = ["Cuit Librador"]
+STATE_COLUMNS = ["Estado"]
+
+STATE_LABELS = {
+    "CARTERA": "En cartera",
+    "VENDIDO": "Vendido",
+}
 
 
 def format_dates(rows, columns=DATE_COLUMNS):
@@ -21,6 +27,15 @@ def format_amounts(rows, columns=AMOUNT_COLUMNS):
             value = row.get(col)
             if isinstance(value, (int, float, Decimal)):
                 row[col] = f"{float(value):,.2f}"
+    return rows
+
+
+def format_states(rows, columns=STATE_COLUMNS, labels=STATE_LABELS):
+    for row in rows:
+        for col in columns:
+            value = row.get(col)
+            if value in labels:
+                row[col] = labels[value]
     return rows
 
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, session, redirect, url_for, render_template
 from modules.portfolio.service import build_portfolio
-from presentation import format_dates, format_cuits
+from presentation import format_dates, format_cuits, format_states
 
 bp = Blueprint("portfolio", __name__)
 
@@ -15,4 +15,5 @@ def portfolio_table():
     rows = build_portfolio()
     rows = format_dates(rows)
     rows = format_cuits(rows)
+    rows = format_states(rows)
     return render_template("portfolio.html", rows=rows)

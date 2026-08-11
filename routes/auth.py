@@ -11,9 +11,10 @@ def login():
     return redirect(flow["auth_uri"])
 
 
-@bp.route("/getAToken")
+@bp.route("/getAToken", methods=["GET", "POST"])
 def authorized():
-    result = complete_auth_flow(session.get("flow", {}), request.args)
+    auth_response = request.form if request.method == "POST" else request.args
+    result = complete_auth_flow(session.get("flow", {}), auth_response)
     if "error" in result:
         return render_template("index.html", user=None, error=result.get("error_description"))
     session["user"] = result.get("id_token_claims")
