@@ -54,7 +54,7 @@
   }
 
   function isGuaranteed(tr) {
-    return tr.dataset.account === "5006" && tr.dataset.state === "Vendido";
+    return tr.dataset.account === "5005" && tr.dataset.state === "Vendido";
   }
 
   function selectedOrigins() {
