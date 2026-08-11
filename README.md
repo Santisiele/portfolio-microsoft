@@ -11,7 +11,7 @@ usuario**, y con ese token consulta el **endpoint TDS** de Dataverse por SQL, ig
 que SSMS pero desde código.
 
 Cada consulta se corre en **los dos entornos** y se consolida en una sola respuesta,
-agregando una columna `origin` (`DHF` / `CONFINANCE`) para saber de dónde vino cada fila.
+agregando una columna `Origen` (`DHF` / `CONFINANCE`) para saber de dónde vino cada fila.
 
 ```
 Navegador  --(login + MFA)-->  Entra ID  -->  token del usuario

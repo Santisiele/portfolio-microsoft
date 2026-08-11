@@ -1,23 +1,173 @@
 {% extends "base.html" %}
 {% block title %}Cartera{% endblock %}
-{% block main_class %}wide{% endblock %}
+{% block main_class %}container-fluid px-4 py-4{% endblock %}
 {% block content %}
-  <h1>Cartera</h1>
-  <p class="sub">{{ rows|length }} registro(s)</p>
-  <a class="btn gris" href="{{ url_for('main.index') }}">← Volver</a>
+
+  {% set columns = ["Cliente", "Fecha Acr.", "Fecha Compra", "Firmante", "Importe", "Cuit Librador", "Origen", "Estado"] %}
+  {% set col_types = {"Importe": "number", "Fecha Compra": "date", "Fecha Acr.": "date"} %}
+  {% set right_cols = ["Importe"] %}
+  {% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Acr.", "Origen", "Estado"] %}
+  {% set nowrap_cols = ["Cuit Librador", "Fecha Compra", "Fecha Acr.", "Importe"] %}
+
+  {% set origen_class = {"DHF": "origen-dhf", "CONFINANCE": "origen-confinance", "BOLSA": "origen-bolsa"} %}
+  {% set estado_class = {
+    "En cartera": "estado-en-cartera",
+    "CARTERA": "estado-en-cartera",
+    "Pendiente": "estado-pendiente",
+    "Pendiente de pago": "estado-pendiente-de-pago",
+    "Vendido": "estado-vendido",
+    "VENDIDO": "estado-vendido",
+    "Depositado": "estado-depositado"
+  } %}
+
+  {% set origen_values = [] %}
+  {% for row in rows %}
+    {% if row["Origen"] and row["Origen"] not in origen_values %}
+      {% set _ = origen_values.append(row["Origen"]) %}
+    {% endif %}
+  {% endfor %}
+
+  {% set estado_values = [] %}
+  {% for row in rows %}
+    {% if row["Estado"] and row["Estado"] not in estado_values %}
+      {% set _ = estado_values.append(row["Estado"]) %}
+    {% endif %}
+  {% endfor %}
+
+  <div class="d-flex align-items-baseline gap-3 mb-3">
+    <h1 class="h3 mb-0">Cartera</h1>
+    <span class="text-muted small"><span id="count">{{ rows|length }}</span> cheques</span>
+    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('main.index') }}">← Volver</a>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex flex-wrap align-items-end gap-3">
+
+        <div>
+          <label class="form-label small text-muted mb-1" for="f-cuit">CUIT</label>
+          <input id="f-cuit" type="search" class="form-control form-control-sm" placeholder="Con o sin guiones…" style="width: 12rem;">
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1" for="f-firmante">Firmante</label>
+          <input id="f-firmante" type="search" class="form-control form-control-sm" placeholder="Buscar firmante…" style="width: 12rem;">
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1" for="f-cliente">Cliente</label>
+          <input id="f-cliente" type="search" class="form-control form-control-sm" placeholder="Buscar cliente…" style="width: 12rem;">
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1 d-block">Origen</label>
+          <div class="dropdown">
+            <button id="origen-label" class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                    data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+              Origen
+            </button>
+            <div class="dropdown-menu origen-menu">
+              {% for origen in origen_values %}
+                <div class="form-check">
+                  <input class="form-check-input origen-check" type="checkbox" value="{{ origen }}" id="origen-{{ loop.index }}">
+                  <label class="form-check-label small" for="origen-{{ loop.index }}">
+                    <span class="tag {{ origen_class.get(origen, '') }}">{{ origen }}</span>
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1 d-block">Estado</label>
+          <div class="dropdown">
+            <button id="estado-label" class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                    data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+              Estado
+            </button>
+            <div class="dropdown-menu origen-menu">
+              {% for estado in estado_values %}
+                <div class="form-check">
+                  <input class="form-check-input estado-check" type="checkbox" value="{{ estado }}" id="estado-{{ loop.index }}">
+                  <label class="form-check-label small" for="estado-{{ loop.index }}">
+                    <span class="tag {{ estado_class.get(estado, '') }}">{{ estado }}</span>
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-check form-switch ms-md-auto">
+          <input class="form-check-input" type="checkbox" role="switch" id="guaranteed">
+          <label class="form-check-label small" for="guaranteed">Modo garantizado</label>
+        </div>
+
+      </div>
+
+      <div class="d-flex flex-wrap gap-4 mt-3 pt-3 border-top">
+        <div>
+          <div class="text-muted small">Total fijo</div>
+          <div class="fs-5 fw-semibold"><span id="total-fixed">0.00</span></div>
+        </div>
+        <div>
+          <div class="text-muted small">Total filtrado</div>
+          <div class="fs-5 fw-semibold">
+            <span id="total-filtered-pill" class="total-pill"><span id="total-filtered">0.00</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   {% if rows %}
-    <table>
-      <thead>
-        <tr>{% for col in rows[0].keys() %}<th>{{ col }}</th>{% endfor %}</tr>
-      </thead>
-      <tbody>
-        {% for row in rows %}
-          <tr>{% for value in row.values() %}<td>{{ value if value is not none else "" }}</td>{% endfor %}</tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+        <table class="table table-sm table-striped table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              {% for col in columns %}
+                <th class="sortable {% if col in right_cols %}text-end{% elif col in center_cols %}text-center{% endif %}"
+                    data-type="{{ col_types.get(col, 'text') }}">{{ col }}<span class="sort-ind text-muted"></span></th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody id="rows">
+            {% for row in rows %}
+              <tr
+                data-amount="{{ row['Importe'] or 0 }}"
+                data-cuit="{{ row['Cuit Librador'] or '' }}"
+                data-firmante="{{ (row['Firmante'] or '')|lower }}"
+                data-cliente="{{ (row['Cliente'] or '')|lower }}"
+                data-origen="{{ row['Origen'] or '' }}"
+                data-account="{{ row['Cuenta Destino'] or '' }}"
+                data-state="{{ row['Estado'] or '' }}">
+                {% for col in columns %}
+                  {% set value = row.get(col) %}
+                  {% if col == "Importe" %}
+                    <td class="text-end text-nowrap js-amount"></td>
+                  {% elif col == "Origen" %}
+                    <td class="text-center">
+                      {% if value %}<span class="tag {{ origen_class.get(value, '') }}">{{ value }}</span>{% endif %}
+                    </td>
+                  {% elif col == "Estado" %}
+                    <td class="text-center">
+                      {% if value %}<span class="tag {{ estado_class.get(value, '') }}">{{ value }}</span>{% endif %}
+                    </td>
+                  {% else %}
+                    <td class="{% if col in center_cols %}text-center{% endif %}{% if col in nowrap_cols %} text-nowrap{% endif %}">{{ value if value is not none else "" }}</td>
+                  {% endif %}
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   {% else %}
-    <p class="empty">Sin resultados.</p>
+    <p class="text-muted">Sin resultados.</p>
   {% endif %}
+
+  <script src="{{ url_for('static', filename='js/portfolio.js') }}"></script>
 {% endblock %}

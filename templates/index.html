@@ -1,21 +1,60 @@
 {% extends "base.html" %}
+{% block title %}Inicio · Cartera CRM{% endblock %}
+{% block main_class %}container py-5{% endblock %}
 {% block content %}
-  <h1>Cartera CRM</h1>
+
   {% if user %}
-    <div class="card">
-      <p>Sesión iniciada como <strong>{{ user.name or user.preferred_username }}</strong>.</p>
-      <p>Ya tenés el token del usuario disponible para consultar el CRM por SQL.</p>
-      <p>
-        <a class="btn" href="{{ url_for('portfolio.portfolio_table') }}">Ver cartera</a>
-        <a class="btn" href="{{ url_for('portfolio.portfolio_json') }}">Cartera (JSON)</a>
-        <a class="btn gris" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
-      </p>
+    <div class="mb-4">
+      <h1 class="h3 mb-1">Hola, {{ (user.name or user.preferred_username).split(' ')[0] }} 👋</h1>
+      <p class="text-muted mb-0">¿Qué querés ver hoy?</p>
     </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-md-6 col-lg-4">
+        <a href="{{ url_for('portfolio.portfolio_table') }}" class="text-decoration-none">
+          <div class="card h-100 shadow-sm menu-card">
+            <div class="card-body d-flex align-items-start gap-3">
+              <span class="menu-icon bg-primary-subtle text-primary"><i class="bi bi-table"></i></span>
+              <div>
+                <h2 class="h5 mb-1 text-body">Cartera</h2>
+                <p class="text-muted small mb-0">Tabla de cheques con filtros, colores y totales.</p>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="col-12 col-md-6 col-lg-4">
+        <a href="{{ url_for('auth.logout') }}" class="text-decoration-none">
+          <div class="card h-100 shadow-sm menu-card">
+            <div class="card-body d-flex align-items-start gap-3">
+              <span class="menu-icon bg-danger-subtle text-danger"><i class="bi bi-box-arrow-right"></i></span>
+              <div>
+                <h2 class="h5 mb-1 text-body">Cerrar sesión</h2>
+                <p class="text-muted small mb-0">Salir de la cuenta de Microsoft.</p>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+
   {% else %}
-    <div class="card">
-      <p>Iniciá sesión con tu cuenta de Microsoft para acceder a los datos del CRM.</p>
-      <a class="btn" href="{{ url_for('auth.login') }}">Iniciar sesión con Microsoft</a>
-      {% if error %}<p class="error">Error: {{ error }}</p>{% endif %}
+    <div class="row justify-content-center">
+      <div class="col-12 col-sm-8 col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0 mt-5">
+          <div class="card-body text-center p-5">
+            <span class="menu-icon bg-primary-subtle text-primary mx-auto mb-3"><i class="bi bi-wallet2"></i></span>
+            <h1 class="h4 mb-2">Cartera CRM</h1>
+            <p class="text-muted">Iniciá sesión con tu cuenta de Microsoft para acceder a los datos del CRM.</p>
+            <a class="btn btn-primary btn-lg w-100 mt-2" href="{{ url_for('auth.login') }}">
+              <i class="bi bi-microsoft me-2"></i>Iniciar sesión con Microsoft
+            </a>
+            {% if error %}<p class="text-danger mt-3 mb-0 small">Error: {{ error }}</p>{% endif %}
+          </div>
+        </div>
+      </div>
     </div>
   {% endif %}
+
 {% endblock %}

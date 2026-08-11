@@ -24,7 +24,9 @@ def _msal_app(cache=None) -> msal.ConfidentialClientApplication:
 
 
 def build_auth_flow(redirect_uri: str) -> dict:
-    return _msal_app().initiate_auth_code_flow(LOGIN_SCOPES, redirect_uri=redirect_uri)
+    return _msal_app().initiate_auth_code_flow(
+        LOGIN_SCOPES, redirect_uri=redirect_uri, response_mode="form_post"
+    )
 
 
 def complete_auth_flow(flow: dict, request_args) -> dict:

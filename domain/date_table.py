@@ -3,6 +3,8 @@ import pandas as pd
 
 MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
 DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+START_DATE = "2025-01-01"
+END_DATE = "2027-12-31"
 
 HOLIDAYS_AR = {
     "2026-01-01": "Año Nuevo",
@@ -54,7 +56,7 @@ def is_selected_date_valid(selected_date, df: pd.DataFrame, today=None) -> int:
     return int(minimum is not None and selected_date >= minimum)
 
 
-def build_calendar(start: str = "2026-01-01", end: str = "2026-12-31",
+def build_calendar(start: str = START_DATE, end: str = END_DATE,
     holidays: dict = None, today=None) -> pd.DataFrame:
     holidays = holidays if holidays is not None else HOLIDAYS_AR
     today = _today(today)
@@ -86,3 +88,19 @@ def build_calendar(start: str = "2026-01-01", end: str = "2026-12-31",
     df["is_last_20_business_days"] = df["date"].isin(top20).astype(int)
 
     return df
+
+from datetime import date, datetime
+
+def calculate_acreditation_from_payment(payment_date, calendar=None,
+                                        start=START_DATE, end=END_DATE):
+    if isinstance(payment_date, str):
+        payment_date = date.fromisoformat(payment_date[:10])
+    elif isinstance(payment_date, datetime):
+        payment_date = payment_date.date()
+
+    df = calendar if calendar is not None else build_calendar(start, end)
+
+    is_business = df.loc[df["date"] == payment_date, "is_business_day"].iloc[0] == 1
+    n = 2 if is_business else 3
+    future = df[(df["is_business_day"] == 1) & (df["date"] > payment_date)]["date"]
+    return future.iloc[n - 1]
