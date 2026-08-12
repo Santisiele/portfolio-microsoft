@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import pandas as pd
 
 MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
@@ -41,6 +41,13 @@ def last_business_day(df: pd.DataFrame, today=None):
     today = _today(today)
     days = df[(df["is_business_day"] == 1) & (df["date"] < today)]["date"]
     return days.max() if not days.empty else None
+
+
+def next_business_day(today=None, calendar=None, start=START_DATE, end=END_DATE):
+    today = _today(today)
+    df = calendar if calendar is not None else build_calendar(start, end)
+    future = df[(df["is_business_day"] == 1) & (df["date"] > today)]["date"]
+    return future.min() if not future.empty else None
 
 
 def last_n_business_days(df: pd.DataFrame, n: int = 20, today=None) -> set:
@@ -89,7 +96,6 @@ def build_calendar(start: str = START_DATE, end: str = END_DATE,
 
     return df
 
-from datetime import date, datetime
 
 def calculate_acreditation_from_payment(payment_date, calendar=None,
                                         start=START_DATE, end=END_DATE):
