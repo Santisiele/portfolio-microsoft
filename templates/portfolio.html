@@ -63,6 +63,9 @@
             <input id="f-acr-from" type="date" class="form-control form-control-sm" style="width: 9.5rem;">
             <span class="text-muted small">-</span>
             <input id="f-acr-to" type="date" class="form-control form-control-sm" style="width: 9.5rem;">
+            <button id="ver-manana" type="button" class="btn btn-outline-primary btn-sm ms-1 text-nowrap" data-next="{{ next_business_day or '' }}">
+              <i class="bi bi-sun me-1"></i>Ver mañana
+            </button>
           </div>
         </div>
 
@@ -106,9 +109,14 @@
           </div>
         </div>
 
-        <div class="form-check form-switch ms-md-auto">
-          <input class="form-check-input" type="checkbox" role="switch" id="guaranteed">
-          <label class="form-check-label small" for="guaranteed">Modo garantizado</label>
+        <div class="ms-md-auto d-flex align-items-center gap-3">
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" role="switch" id="guaranteed">
+            <label class="form-check-label small" for="guaranteed">Modo garantizado</label>
+          </div>
+          <button id="reset-filters" type="button" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Resetear filtros
+          </button>
         </div>
 
       </div>

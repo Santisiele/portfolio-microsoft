@@ -12,6 +12,8 @@
     totalFilteredPill: document.getElementById("total-filtered-pill"),
     origenLabel: document.getElementById("origen-label"),
     estadoLabel: document.getElementById("estado-label"),
+    reset: document.getElementById("reset-filters"),
+    verManana: document.getElementById("ver-manana"),
   };
   const tbody = document.getElementById("rows");
   const rows = Array.from(tbody.querySelectorAll("tr"));
@@ -42,15 +44,14 @@
   });
 
   const acrDates = rows.map((tr) => tr.dataset.acr).filter(Boolean).sort();
+  const acrMin = acrDates.length ? acrDates[0] : "";
+  const acrMax = acrDates.length ? acrDates[acrDates.length - 1] : "";
   if (acrDates.length && els.acrFrom && els.acrTo) {
-    const minD = acrDates[0];
-    const maxD = acrDates[acrDates.length - 1];
-    els.acrFrom.value = minD;
-    els.acrTo.value = maxD;
-    els.acrFrom.min = minD;
-    els.acrFrom.max = maxD;
-    els.acrTo.min = minD;
-    els.acrTo.max = maxD;
+    els.acrFrom.value = acrMin;
+    els.acrFrom.min = acrMin;
+    els.acrFrom.max = acrMax;
+    els.acrTo.min = acrMin;
+    els.acrTo.max = acrMax;
   }
 
   function isGuaranteed(tr) {
@@ -113,6 +114,20 @@
     }
   }
 
+  function resetFilters() {
+    els.cuit.value = "";
+    els.firmante.value = "";
+    els.cliente.value = "";
+    origenBoxes.forEach((b) => (b.checked = false));
+    estadoBoxes.forEach((b) => (b.checked = false));
+    if (els.guaranteed) els.guaranteed.checked = false;
+    if (els.acrFrom && els.acrTo && acrDates.length) {
+      els.acrFrom.value = acrMin;
+      els.acrTo.value = "";
+    }
+    apply();
+  }
+
   function sortValue(tr, index, type) {
     const cell = tr.children[index];
     const text = cell.textContent.trim();
@@ -161,6 +176,14 @@
   if (els.guaranteed) els.guaranteed.addEventListener("change", apply);
   origenBoxes.forEach(function (b) { b.addEventListener("change", apply); });
   estadoBoxes.forEach(function (b) { b.addEventListener("change", apply); });
+  if (els.reset) els.reset.addEventListener("click", resetFilters);
+  if (els.verManana) els.verManana.addEventListener("click", function () {
+    const d = els.verManana.dataset.next || acrMin;
+    if (!d) return;
+    if (els.acrFrom) els.acrFrom.value = d;
+    if (els.acrTo) els.acrTo.value = d;
+    apply();
+  });
 
   apply();
 })();

@@ -1,6 +1,7 @@
 from flask import Blueprint, session, redirect, url_for, render_template
 from modules.portfolio.service import build_portfolio
 from presentation import format_dates, format_cuits, format_states
+from domain.date_table import next_business_day
 
 bp = Blueprint("portfolio", __name__)
 
@@ -16,4 +17,6 @@ def portfolio_table():
     rows = format_dates(rows)
     rows = format_cuits(rows)
     rows = format_states(rows)
-    return render_template("portfolio.html", rows=rows)
+    nbd = next_business_day()
+    return render_template("portfolio.html", rows=rows,
+                           next_business_day=nbd.isoformat() if nbd else "")
