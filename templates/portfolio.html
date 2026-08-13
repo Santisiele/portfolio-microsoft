@@ -3,32 +3,42 @@
 {% block main_class %}container-fluid px-4 py-4{% endblock %}
 {% block content %}
 
-  {% set columns = ["Cliente", "Fecha Acr.", "Fecha Compra", "Firmante", "Importe", "Cuit Librador", "Origen", "Estado"] %}
+  {% set columns = ["Cliente", "Fecha Acr.", "Fecha Compra", "Firmante", "Importe", "Cuit Librador", "Origen", "Empresa", "Estado"] %}
   {% set col_types = {"Importe": "number", "Fecha Compra": "date", "Fecha Acr.": "date"} %}
   {% set right_cols = ["Importe"] %}
-  {% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Acr.", "Origen", "Estado"] %}
+  {% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Acr.", "Origen", "Empresa", "Estado"] %}
   {% set nowrap_cols = ["Cuit Librador", "Fecha Compra", "Fecha Acr.", "Importe"] %}
 
-  {% set origen_class = {"DHF": "origen-dhf", "CONFINANCE": "origen-confinance", "BOLSA": "origen-bolsa"} %}
-  {% set estado_class = {
-    "En cartera": "estado-en-cartera",
-    "Pendiente": "estado-pendiente",
-    "Pendiente de depósito": "estado-pendiente-de-deposito",
-    "Vendido": "estado-vendido",
-    "Depositado": "estado-depositado"
+  {% set origin_class = {"DHF": "origin-dhf", "CONFINANCE": "origin-confinance", "BOLSA": "origin-bolsa"} %}
+  {% set company_class = {
+    "CRM-DHF": "company-dhf", "CRM-CONFINANCE": "company-confinance", "SC1": "company-sc1", "Platinum": "company-platinum", "Confinance": "company-confinance-bolsa"
+  } %}
+  {% set state_class = {
+    "En cartera": "state-en-cartera",
+    "Pendiente": "state-pendiente",
+    "Pendiente de depósito": "state-pendiente-de-deposito",
+    "Vendido": "state-vendido",
+    "Depositado": "state-depositado"
   } %}
 
-  {% set origen_values = [] %}
+  {% set origin_values = [] %}
   {% for row in rows %}
-    {% if row["Origen"] and row["Origen"] not in origen_values %}
-      {% set _ = origen_values.append(row["Origen"]) %}
+    {% if row["Origen"] and row["Origen"] not in origin_values %}
+      {% set _ = origin_values.append(row["Origen"]) %}
     {% endif %}
   {% endfor %}
 
-  {% set estado_values = [] %}
+  {% set company_values = [] %}
   {% for row in rows %}
-    {% if row["Estado"] and row["Estado"] not in estado_values %}
-      {% set _ = estado_values.append(row["Estado"]) %}
+    {% if row["Empresa"] and row["Empresa"] not in company_values %}
+      {% set _ = company_values.append(row["Empresa"]) %}
+    {% endif %}
+  {% endfor %}
+
+  {% set state_values = [] %}
+  {% for row in rows %}
+    {% if row["Estado"] and row["Estado"] not in state_values %}
+      {% set _ = state_values.append(row["Estado"]) %}
     {% endif %}
   {% endfor %}
 
@@ -72,16 +82,36 @@
         <div>
           <label class="form-label small text-muted mb-1 d-block">Origen</label>
           <div class="dropdown">
-            <button id="origen-label" class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+            <button id="origin-label" class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
                     data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
               Origen
             </button>
-            <div class="dropdown-menu origen-menu">
-              {% for origen in origen_values %}
+            <div class="dropdown-menu filter-menu">
+              {% for origin in origin_values %}
                 <div class="form-check">
-                  <input class="form-check-input origen-check" type="checkbox" value="{{ origen }}" id="origen-{{ loop.index }}">
-                  <label class="form-check-label small" for="origen-{{ loop.index }}">
-                    <span class="tag {{ origen_class.get(origen, '') }}">{{ origen }}</span>
+                  <input class="form-check-input origin-check" type="checkbox" value="{{ origin }}" id="origin-{{ loop.index }}">
+                  <label class="form-check-label small" for="origin-{{ loop.index }}">
+                    <span class="tag {{ origin_class.get(origin, '') }}">{{ origin }}</span>
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1 d-block">Empresa</label>
+          <div class="dropdown">
+            <button id="company-label" class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                    data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+              Empresa
+            </button>
+            <div class="dropdown-menu filter-menu">
+              {% for company in company_values %}
+                <div class="form-check">
+                  <input class="form-check-input company-check" type="checkbox" value="{{ company }}" id="company-{{ loop.index }}">
+                  <label class="form-check-label small" for="company-{{ loop.index }}">
+                    <span class="tag {{ company_class.get(company, '') }}">{{ company }}</span>
                   </label>
                 </div>
               {% endfor %}
@@ -92,16 +122,16 @@
         <div>
           <label class="form-label small text-muted mb-1 d-block">Estado</label>
           <div class="dropdown">
-            <button id="estado-label" class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+            <button id="state-label" class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
                     data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
               Estado
             </button>
-            <div class="dropdown-menu origen-menu">
-              {% for estado in estado_values %}
+            <div class="dropdown-menu filter-menu">
+              {% for state in state_values %}
                 <div class="form-check">
-                  <input class="form-check-input estado-check" type="checkbox" value="{{ estado }}" id="estado-{{ loop.index }}">
-                  <label class="form-check-label small" for="estado-{{ loop.index }}">
-                    <span class="tag {{ estado_class.get(estado, '') }}">{{ estado }}</span>
+                  <input class="form-check-input state-check" type="checkbox" value="{{ state }}" id="state-{{ loop.index }}">
+                  <label class="form-check-label small" for="state-{{ loop.index }}">
+                    <span class="tag {{ state_class.get(state, '') }}">{{ state }}</span>
                   </label>
                 </div>
               {% endfor %}
@@ -162,9 +192,10 @@
                 data-cuit="{{ row['Cuit Librador'] or '' }}"
                 data-firmante="{{ (row['Firmante'] or '')|lower }}"
                 data-cliente="{{ (row['Cliente'] or '')|lower }}"
-                data-origen="{{ row['Origen'] or '' }}"
+                data-origin="{{ row['Origen'] or '' }}"
                 data-account="{{ row['Cuenta Destino'] or '' }}"
                 data-state="{{ row['Estado'] or '' }}"
+                data-company="{{ row['Empresa'] or '' }}"
                 data-acr="{{ acr_iso }}">
                 {% for col in columns %}
                   {% set value = row.get(col) %}
@@ -172,11 +203,15 @@
                     <td class="text-end text-nowrap js-amount"></td>
                   {% elif col == "Origen" %}
                     <td class="text-center">
-                      {% if value %}<span class="tag {{ origen_class.get(value, '') }}">{{ value }}</span>{% endif %}
+                      {% if value %}<span class="tag {{ origin_class.get(value, '') }}">{{ value }}</span>{% endif %}
+                    </td>
+                  {% elif col == "Empresa" %}
+                    <td class="text-center">
+                      {% if value %}<span class="tag {{ company_class.get(value, '') }}">{{ value }}</span>{% endif %}
                     </td>
                   {% elif col == "Estado" %}
                     <td class="text-center">
-                      {% if value %}<span class="tag {{ estado_class.get(value, '') }}">{{ value }}</span>{% endif %}
+                      {% if value %}<span class="tag {{ state_class.get(value, '') }}">{{ value }}</span>{% endif %}
                     </td>
                   {% else %}
                     <td class="{% if col in center_cols %}text-center{% endif %}{% if col in nowrap_cols %} text-nowrap{% endif %}">{{ value if value is not none else "" }}</td>
