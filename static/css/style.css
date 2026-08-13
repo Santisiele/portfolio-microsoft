@@ -39,15 +39,21 @@
   color: #212529;
 }
 
-.origen-bolsa       { background: #753800; color: #fff; }
-.origen-confinance  { background: #BFE1F6; color: #10344a; }
-.origen-dhf         { background: #B10202; color: #fff; }
+.origin-bolsa       { background: #6d6d6d; color: #fff; }
+.origin-confinance  { background: #BFE1F6; color: #10344a; }
+.origin-dhf         { background: #B10202; color: #fff; }
 
-.estado-en-cartera         { background: #7ec8e3; color: #0b3a4a; }
-.estado-pendiente          { background: #f4a6c6; color: #5a1533; }
-.estado-pendiente-de-deposito  { background: #f4a6c6; color: #5a1533; }
-.estado-vendido            { background: #5b8def; color: #fff;    }
-.estado-depositado         { background: #3fa971; color: #fff;    }
+.company-sc1              { background: #753800; color: #fff; }
+.company-platinum        { background: #fc6ddd; color: #fff; }
+.company-confinance-bolsa { background: #BFE1F6; color: #fff; }
+.company-confinance      { background: #BFE1F6; color: #10344a; }
+.company-dhf             { background: #B10202; color: #fff; }
+
+.state-en-cartera          { background: #7ec8e3; color: #0b3a4a; }
+.state-pendiente           { background: #f4a6c6; color: #5a1533; }
+.state-pendiente-de-deposito { background: #f4a6c6; color: #5a1533; }
+.state-vendido             { background: #5b8def; color: #fff;    }
+.state-depositado          { background: #3fa971; color: #fff;    }
 
 #loadbar {
   position: fixed;
@@ -91,13 +97,30 @@
   flex-shrink: 0;
 }
 
-.origen-menu {
+.filter-menu {
   min-width: 12rem;
   padding: 0.5rem 0.75rem;
 }
-.origen-menu .form-check {
+.filter-menu .form-check {
   margin-bottom: 0.25rem;
 }
-.origen-menu .form-check:last-child {
+.filter-menu .form-check:last-child {
   margin-bottom: 0;
+}
+
+@media (max-width: 767.98px) {
+  .filtros > div {
+    width: 100%;
+  }
+  .filtros .form-control:not([type="date"]) {
+    width: 100% !important;
+  }
+  .filtros .dropdown,
+  .filtros .dropdown > .dropdown-toggle {
+    width: 100%;
+  }
+  .filtros input[type="date"] {
+    flex: 1 1 0;
+    width: auto !important;
+  }
 }

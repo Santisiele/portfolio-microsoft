@@ -29,3 +29,11 @@ def eliminate_duplicate_checks(rows):
 
         result.append(row)
     return result
+
+def put_company_name(rows):
+    result = []
+    for row in rows:
+        origin = row.get("Origen")
+        row["Empresa"] = "CRM-" + origin
+        result.append(row)
+    return result

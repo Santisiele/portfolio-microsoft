@@ -6,11 +6,12 @@ from sources.tds import read_tds
 from sources.gsheet import read_public_sheet
 
 from queries.portfolio import PORTFOLIO
-from domain.portfolio_transform import put_acreditation_date, eliminate_duplicate_checks
+from domain.portfolio_transform import put_acreditation_date, eliminate_duplicate_checks, put_company_name
 
-PORTFOLIO_STEPS = [put_acreditation_date, eliminate_duplicate_checks]
+PORTFOLIO_STEPS = [put_acreditation_date, eliminate_duplicate_checks, put_company_name]
 
 COLUMN_MAP = {
+    "Empresa":       "Empresa",
     "FIRMANTE":      "Firmante",
     "CUIT Librador": "Cuit Librador",
     "Fecha Acr.":    "Fecha Acr.",

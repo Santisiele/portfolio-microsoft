@@ -10,23 +10,49 @@
     totalFixed: document.getElementById("total-fixed"),
     totalFiltered: document.getElementById("total-filtered"),
     totalFilteredPill: document.getElementById("total-filtered-pill"),
-    origenLabel: document.getElementById("origen-label"),
-    estadoLabel: document.getElementById("estado-label"),
+    originLabel: document.getElementById("origin-label"),
+    companyLabel: document.getElementById("company-label"),
+    stateLabel: document.getElementById("state-label"),
     reset: document.getElementById("reset-filters"),
     verManana: document.getElementById("ver-manana"),
   };
   const tbody = document.getElementById("rows");
   const rows = Array.from(tbody.querySelectorAll("tr"));
   const headers = Array.from(document.querySelectorAll("th.sortable"));
-  const origenBoxes = Array.from(document.querySelectorAll(".origen-check"));
-  const estadoBoxes = Array.from(document.querySelectorAll(".estado-check"));
+  const originBoxes = Array.from(document.querySelectorAll(".origin-check"));
+  const companyBoxes = Array.from(document.querySelectorAll(".company-check"));
+  const stateBoxes = Array.from(document.querySelectorAll(".state-check"));
 
-  const origenClassByValue = {};
-  origenBoxes.forEach(function (b) {
+  const originClassByValue = {};
+  originBoxes.forEach(function (b) {
     const tag = b.closest(".form-check").querySelector(".tag");
-    const cls = tag ? Array.from(tag.classList).find((c) => c.indexOf("origen-") === 0) : null;
-    if (cls) origenClassByValue[b.value] = cls;
+    const cls = tag ? Array.from(tag.classList).find((c) => c.indexOf("origin-") === 0) : null;
+    if (cls) originClassByValue[b.value] = cls;
   });
+
+  const companiesByOrigin = {};
+  rows.forEach(function (tr) {
+    const o = tr.dataset.origin;
+    const c = tr.dataset.company;
+    if (!o || !c) return;
+    (companiesByOrigin[o] = companiesByOrigin[o] || new Set()).add(c);
+  });
+
+  function syncCompanyOptions() {
+    const origins = selectedOrigins();
+    let allowed = null;
+    if (origins.length) {
+      allowed = new Set();
+      origins.forEach(function (o) {
+        (companiesByOrigin[o] || new Set()).forEach((c) => allowed.add(c));
+      });
+    }
+    companyBoxes.forEach(function (b) {
+      const show = !allowed || allowed.has(b.value);
+      b.closest(".form-check").style.display = show ? "" : "none";
+      if (!show && b.checked) b.checked = false;
+    });
+  }
 
   const onlyDigits = (s) => (s || "").replace(/\D/g, "");
 
@@ -59,11 +85,15 @@
   }
 
   function selectedOrigins() {
-    return origenBoxes.filter((b) => b.checked).map((b) => b.value);
+    return originBoxes.filter((b) => b.checked).map((b) => b.value);
+  }
+
+  function selectedCompanies() {
+    return companyBoxes.filter((b) => b.checked && b.closest(".form-check").style.display !== "none").map((b) => b.value);
   }
 
   function selectedStates() {
-    return estadoBoxes.filter((b) => b.checked).map((b) => b.value);
+    return stateBoxes.filter((b) => b.checked).map((b) => b.value);
   }
 
   function sumCents(list) {
@@ -82,6 +112,7 @@
     const acrFrom = els.acrFrom ? els.acrFrom.value : "";
     const acrTo = els.acrTo ? els.acrTo.value : "";
     const origins = selectedOrigins();
+    const companies = selectedCompanies();
     const states = selectedStates();
 
     const base = rows.filter((tr) => !onlyGuaranteed || isGuaranteed(tr));
@@ -93,24 +124,26 @@
       const okCuit = !cuitQ || tr.dataset.cuitNorm.indexOf(cuitQ) !== -1;
       const okFirmante = !firmanteQ || tr.dataset.firmante.indexOf(firmanteQ) !== -1;
       const okCliente = !clienteQ || tr.dataset.cliente.indexOf(clienteQ) !== -1;
-      const okOrigen = origins.length === 0 || origins.indexOf(tr.dataset.origen) !== -1;
-      const okEstado = states.length === 0 || states.indexOf(tr.dataset.state) !== -1;
+      const okOrigin = origins.length === 0 || origins.indexOf(tr.dataset.origin) !== -1;
+      const okCompany = companies.length === 0 || companies.indexOf(tr.dataset.company) !== -1;
+      const okState = states.length === 0 || states.indexOf(tr.dataset.state) !== -1;
       const acr = tr.dataset.acr;
       const okAcr = !acr || ((!acrFrom || acr >= acrFrom) && (!acrTo || acr <= acrTo));
-      const show = inBase && okCuit && okFirmante && okCliente && okOrigen && okEstado && okAcr;
+      const show = inBase && okCuit && okFirmante && okCliente && okOrigin && okCompany && okState && okAcr;
       tr.style.display = show ? "" : "none";
       if (show) visible.push(tr);
     });
 
     els.totalFiltered.textContent = formatAmount(sumCents(visible) / 100);
     els.count.textContent = visible.length;
-    els.origenLabel.textContent = origins.length ? "Origen (" + origins.length + ")" : "Origen";
-    els.estadoLabel.textContent = states.length ? "Estado (" + states.length + ")" : "Estado";
+    els.originLabel.textContent = origins.length ? "Origen (" + origins.length + ")" : "Origen";
+    els.companyLabel.textContent = companies.length ? "Empresa (" + companies.length + ")" : "Empresa";
+    els.stateLabel.textContent = states.length ? "Estado (" + states.length + ")" : "Estado";
 
     const pill = els.totalFilteredPill;
-    Object.values(origenClassByValue).forEach((c) => pill.classList.remove(c));
-    if (origins.length === 1 && origenClassByValue[origins[0]]) {
-      pill.classList.add(origenClassByValue[origins[0]]);
+    Object.values(originClassByValue).forEach((c) => pill.classList.remove(c));
+    if (origins.length === 1 && originClassByValue[origins[0]]) {
+      pill.classList.add(originClassByValue[origins[0]]);
     }
   }
 
@@ -118,13 +151,15 @@
     els.cuit.value = "";
     els.firmante.value = "";
     els.cliente.value = "";
-    origenBoxes.forEach((b) => (b.checked = false));
-    estadoBoxes.forEach((b) => (b.checked = false));
+    originBoxes.forEach((b) => (b.checked = false));
+    companyBoxes.forEach((b) => (b.checked = false));
+    stateBoxes.forEach((b) => (b.checked = false));
     if (els.guaranteed) els.guaranteed.checked = false;
     if (els.acrFrom && els.acrTo && acrDates.length) {
       els.acrFrom.value = acrMin;
       els.acrTo.value = "";
     }
+    syncCompanyOptions();
     apply();
   }
 
@@ -174,8 +209,14 @@
     if (el) el.addEventListener("change", apply);
   });
   if (els.guaranteed) els.guaranteed.addEventListener("change", apply);
-  origenBoxes.forEach(function (b) { b.addEventListener("change", apply); });
-  estadoBoxes.forEach(function (b) { b.addEventListener("change", apply); });
+  originBoxes.forEach(function (b) {
+    b.addEventListener("change", function () {
+      syncCompanyOptions();
+      apply();
+    });
+  });
+  companyBoxes.forEach(function (b) { b.addEventListener("change", apply); });
+  stateBoxes.forEach(function (b) { b.addEventListener("change", apply); });
   if (els.reset) els.reset.addEventListener("click", resetFilters);
   if (els.verManana) els.verManana.addEventListener("click", function () {
     const d = els.verManana.dataset.next || acrMin;
@@ -185,5 +226,6 @@
     apply();
   });
 
+  syncCompanyOptions();
   apply();
 })();
