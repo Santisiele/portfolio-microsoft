@@ -101,3 +101,20 @@
 .origen-menu .form-check:last-child {
   margin-bottom: 0;
 }
+
+@media (max-width: 767.98px) {
+  .filtros > div {
+    width: 100%;
+  }
+  .filtros .form-control:not([type="date"]) {
+    width: 100% !important;
+  }
+  .filtros .dropdown,
+  .filtros .dropdown > .dropdown-toggle {
+    width: 100%;
+  }
+  .filtros input[type="date"] {
+    flex: 1 1 0;
+    width: auto !important;
+  }
+}
