@@ -43,8 +43,13 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.endpoint == 'accounting.accounting' %}active{% endif %}" href="{{ url_for('accounting.accounting') }}">
-              <i class="bi bi-bank me-2"></i>Asientos
+            <a class="nav-link {% if request.endpoint == 'accounting.dhf' %}active{% endif %}" href="{{ url_for('accounting.dhf') }}">
+              <i class="bi bi-bank me-2"></i>Asientos DHF
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'accounting.confinance' %}active{% endif %}" href="{{ url_for('accounting.confinance') }}">
+              <i class="bi bi-bank2 me-2"></i>Asientos Confinance
             </a>
           </li>
         </ul>
