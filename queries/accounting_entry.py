@@ -44,7 +44,7 @@ INNER JOIN gval_cheque
 ON gval_chequerechazado.gval_cheque = gval_cheque.gval_chequeid
 WHERE gval_chequerechazado.gval_fechadeconfirmacion >= DATEADD(DAY, -14, GETDATE())
 ORDER BY gval_chequerechazado.gval_fechadeconfirmacion DESC
-""""
+"""
 
 PENDING = """
 SELECT gval_numerodeoperacion,
