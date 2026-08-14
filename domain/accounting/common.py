@@ -57,3 +57,17 @@ def amount_after(text, marker):
     if end == -1:
         end = len(text)
     return parse_money(text[start:end])
+
+
+def build_company_subaccount_map(rows, company_col="Empresa", subaccount_col="SubCuenta"):
+    result = {}
+    for row in rows:
+        company = row.get(company_col)
+        subaccount = row.get(subaccount_col)
+        if not company:
+            continue
+        try:
+            result[str(company).strip()] = int(subaccount)
+        except (TypeError, ValueError):
+            continue
+    return result
