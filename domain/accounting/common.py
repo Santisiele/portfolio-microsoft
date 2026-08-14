@@ -59,6 +59,12 @@ def amount_after(text, marker):
     return parse_money(text[start:end])
 
 
+def resolve_subaccount(company, company_map):
+    target = (company or "").upper()
+    subs = {sub for name, sub in (company_map or {}).items() if name and name.upper() in target}
+    return next(iter(subs)) if len(subs) == 1 else 0
+
+
 def build_company_subaccount_map(rows, company_col="Empresa", subaccount_col="SubCuenta"):
     result = {}
     for row in rows:

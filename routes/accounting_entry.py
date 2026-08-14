@@ -15,6 +15,7 @@ def _render(env, title):
     tables = [
         {"title": "Depósitos", "rows": data["deposits"]},
         {"title": "Ventas", "rows": data["sales"]},
+        {"title": "Cobranzas", "rows": data["collections"]},
     ]
     for t in tables:
         t["rows"] = format_dates(t["rows"], columns=["FECH"])
