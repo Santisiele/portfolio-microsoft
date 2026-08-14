@@ -10,12 +10,9 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="bg-light">
-
-  <!-- barra de carga superior -->
   <div id="loadbar"></div>
 
   {% if session.user %}
-    <!-- barra fina con hamburguesa + marca -->
     <header class="d-flex align-items-center gap-2 px-3 py-2 bg-dark text-white shadow-sm sticky-top">
       <button class="btn btn-dark btn-sm border-0 lh-1 p-1" type="button"
               data-bs-toggle="offcanvas" data-bs-target="#sidemenu" aria-controls="sidemenu" aria-label="Menú">
@@ -26,7 +23,6 @@
       </a>
     </header>
 
-    <!-- menu lateral (offcanvas) -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="sidemenu" aria-labelledby="sidemenuLabel">
       <div class="offcanvas-header bg-dark text-white">
         <h5 class="offcanvas-title d-flex align-items-center gap-2 mb-0" id="sidemenuLabel">
@@ -44,6 +40,11 @@
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint == 'portfolio.portfolio_table' %}active{% endif %}" href="{{ url_for('portfolio.portfolio_table') }}">
               <i class="bi bi-table me-2"></i>Cartera
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'accounting.accounting' %}active{% endif %}" href="{{ url_for('accounting.accounting') }}">
+              <i class="bi bi-bank me-2"></i>Asientos
             </a>
           </li>
         </ul>
