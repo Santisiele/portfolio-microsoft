@@ -110,7 +110,7 @@ SELECT
     gval_operacioncomprachequesid AS 'Id'
 FROM gval_operacioncompracheques
 WHERE
-    gval_fechavalor >= DATEFROMPARTS(YEAR(GETDATE()), 1, 1)
+    gval_fechavalor >= DATEADD(DAY, -14, GETDATE())
     AND statuscodename = 'Pagada'
 ORDER BY gval_fechavalor;
 """
