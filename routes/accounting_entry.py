@@ -17,6 +17,10 @@ def _render(env, title):
         {"title": "Ventas", "rows": data["sales"]},
         {"title": "Cobranzas", "rows": data["collections"]},
         {"title": "Compras", "rows": data["purchases"]},
+        {"title": "Documentos fiscales", "rows": data["tax_documents"]},
+        {"title": "Pagos", "rows": data["payments"]},
+        {"title": "Pendientes", "rows": data["pending"]},
+        {"title": "Rechazados", "rows": data["rejected"]},
     ]
     for t in tables:
         t["rows"] = format_dates(t["rows"], columns=["FECH"])

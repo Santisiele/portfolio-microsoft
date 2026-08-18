@@ -71,6 +71,10 @@ def resolve_subaccount_max(company, company_map):
     return max(subs) if subs else 0
 
 
+def last4(value):
+    return str(value if value is not None else "")[-4:]
+
+
 def build_company_subaccount_map(rows, company_col="Empresa", subaccount_col="SubCuenta"):
     result = {}
     for row in rows:
