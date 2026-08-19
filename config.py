@@ -22,6 +22,11 @@ ENVIRONMENTS = {
 
 STOCK_MARKET_SHEET_URL = os.environ.get("STOCK_MARKET_SHEET_URL", "")
 
+COMPANY_SUBACCOUNT_SHEET = {
+    "DHF":        os.environ.get("COMPANY_SUBACCOUNT_SHEET_DHF", ""),
+    "CONFINANCE": os.environ.get("COMPANY_SUBACCOUNT_SHEET_CONFINANCE", ""),
+}
+
 def scope_for(url: str) -> str:
     return f"{url}/user_impersonation"
 
