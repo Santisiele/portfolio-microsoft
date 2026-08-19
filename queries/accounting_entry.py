@@ -38,7 +38,7 @@ SELECT gval_chequerechazado.gval_numerodeoperacion,
     gval_chequerechazado.gval_cuentacorrientename,
     gval_chequerechazado.gval_fechadeconfirmacion,
     gval_chequerechazado.gval_numcheque,
-    gval_cheque.gval_cuentapropiadestinoname AS Cuenta}
+    gval_cheque.gval_cuentapropiadestinoname AS Cuenta
 FROM gval_chequerechazado
 INNER JOIN gval_cheque
 ON gval_chequerechazado.gval_cheque = gval_cheque.gval_chequeid
@@ -58,7 +58,7 @@ ORDER BY gval_fechadeconfirmacion DESC
 """
 
 PAYMENTS = """
-"SELECT  gval_numoperacion,
+SELECT gval_numoperacion,
     gval_empresaname, 
     gval_importe,
     gval_fechaconfirmacion
@@ -112,5 +112,5 @@ FROM gval_operacioncompracheques
 WHERE
     gval_fechavalor >= DATEADD(DAY, -14, GETDATE())
     AND statuscodename = 'Pagada'
-ORDER BY gval_fechavalor;
+ORDER BY gval_fechavalor
 """

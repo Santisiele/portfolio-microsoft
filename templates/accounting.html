@@ -1,49 +1,77 @@
 {% extends "base.html" %}
-{% block title %}Asientos{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 {% block main_class %}container-fluid px-4 py-4{% endblock %}
 {% block content %}
 
   {% set columns = ["FECH", "SUBCTA", "CONTRA", "DEBE", "CONCEPTO", "HABER"] %}
   {% set right_cols = ["DEBE", "HABER"] %}
 
-  <div class="d-flex align-items-baseline gap-3 mb-3">
-    <h1 class="h3 mb-0">{{ title }}</h1>
-    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('main.index') }}">← Volver</a>
+  <div class="d-flex flex-wrap align-items-end gap-3 mb-3">
+    <h1 class="h3 mb-0 me-auto">{{ title }}</h1>
+    <div>
+      <label class="form-label small text-muted mb-1 d-block">Período (Fecha)</label>
+      <div class="d-flex align-items-center gap-1">
+        <input id="acc-from" type="date" class="form-control form-control-sm" style="width: 9.5rem;">
+        <span class="text-muted small">-</span>
+        <input id="acc-to" type="date" class="form-control form-control-sm" style="width: 9.5rem;">
+      </div>
+    </div>
+    <button id="download-all" type="button" class="btn btn-success btn-sm" data-env="{{ env }}">
+      <i class="bi bi-file-earmark-arrow-down me-1"></i>Descargar todo
+    </button>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">← Volver</a>
   </div>
 
   {% for table in tables %}
-    <div class="d-flex align-items-baseline gap-2 mb-2 mt-4">
-      <h2 class="h5 mb-0">{{ table.title }}</h2>
-      <span class="text-muted small">{{ table.rows|length }} filas</span>
-    </div>
-    {% if table.rows %}
-      <div class="card shadow-sm">
+    <div class="card shadow-sm mb-3 table-card" data-title="{{ table.title }}">
+      <div class="card-header d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-link text-decoration-none p-0 flex-grow-1 text-start collapse-toggle"
+                type="button" data-bs-toggle="collapse" data-bs-target="#tbl-{{ loop.index0 }}" aria-expanded="false">
+          <i class="bi bi-chevron-right chevron me-1"></i>
+          <span class="fw-semibold">{{ table.title }}</span>
+          <span class="text-muted small">(<span class="row-count">{{ table.rows|length }}</span>)</span>
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-success download-one" {% if not table.rows %}disabled{% endif %}>
+          <i class="bi bi-download me-1"></i>xlsx
+        </button>
+      </div>
+      <div class="collapse" id="tbl-{{ loop.index0 }}">
         <div class="card-body p-0">
-          <div class="table-responsive">
-          <table class="table table-sm table-striped table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                {% for col in columns %}
-                  <th class="{% if col in right_cols %}text-end{% endif %} text-nowrap">{{ col }}</th>
-                {% endfor %}
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in table.rows %}
-                <tr>
-                  {% for col in columns %}
-                    <td class="{% if col in right_cols %}text-end{% endif %} text-nowrap">{{ row.get(col) if row.get(col) is not none else "" }}</td>
+          {% if table.rows %}
+            <div class="table-responsive">
+              <table class="table table-sm table-striped table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    {% for col in columns %}
+                      <th class="{% if col in right_cols %}text-end{% endif %} text-nowrap">{{ col }}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in table.rows %}
+                    {% set f = row.get("FECH") %}
+                    {% set fecha_iso = "" %}
+                    {% if f and "/" in f %}
+                      {% set _p = f.split("/") %}
+                      {% set fecha_iso = _p[2] ~ "-" ~ _p[1] ~ "-" ~ _p[0] %}
+                    {% endif %}
+                    <tr data-fecha="{{ fecha_iso }}">
+                      {% for col in columns %}
+                        <td class="{% if col in right_cols %}text-end{% endif %} text-nowrap">{{ row.get(col) if row.get(col) is not none else "" }}</td>
+                      {% endfor %}
+                    </tr>
                   {% endfor %}
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          </div>
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted p-3 mb-0">Sin resultados.</p>
+          {% endif %}
         </div>
       </div>
-    {% else %}
-      <p class="text-muted">Sin resultados.</p>
-    {% endif %}
+    </div>
   {% endfor %}
 
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="{{ url_for('static', filename='js/accounting.js') }}"></script>
 {% endblock %}

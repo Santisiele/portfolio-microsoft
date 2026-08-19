@@ -46,6 +46,8 @@
 .company-sc1              { background: #753800; color: #fff; }
 .company-platinum        { background: #fc6ddd; color: #fff; }
 .company-confinance-bolsa { background: #BFE1F6; color: #fff; }
+.company-confinance      { background: #BFE1F6; color: #10344a; }
+.company-dhf             { background: #B10202; color: #fff; }
 
 .state-en-cartera          { background: #7ec8e3; color: #0b3a4a; }
 .state-pendiente           { background: #f4a6c6; color: #5a1533; }
@@ -104,6 +106,13 @@
 }
 .filter-menu .form-check:last-child {
   margin-bottom: 0;
+}
+
+.table-card .chevron {
+  transition: transform 0.15s ease;
+}
+.table-card .collapse-toggle[aria-expanded="true"] .chevron {
+  transform: rotate(90deg);
 }
 
 @media (max-width: 767.98px) {

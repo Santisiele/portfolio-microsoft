@@ -17,11 +17,15 @@ def _render(env, title):
         {"title": "Ventas", "rows": data["sales"]},
         {"title": "Cobranzas", "rows": data["collections"]},
         {"title": "Compras", "rows": data["purchases"]},
+        {"title": "Documentos fiscales", "rows": data["tax_documents"]},
+        {"title": "Pagos", "rows": data["payments"]},
+        {"title": "Pendientes", "rows": data["pending"]},
+        {"title": "Rechazados", "rows": data["rejected"]},
     ]
     for t in tables:
         t["rows"] = format_dates(t["rows"], columns=["FECH"])
         t["rows"] = format_amounts(t["rows"], columns=["DEBE", "HABER"])
-    return render_template("accounting.html", title=title, tables=tables)
+    return render_template("accounting.html", title=title, tables=tables, env=env.lower())
 
 
 @bp.route("/accounting/dhf")
