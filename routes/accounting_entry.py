@@ -25,7 +25,7 @@ def _render(env, title):
     for t in tables:
         t["rows"] = format_dates(t["rows"], columns=["FECH"])
         t["rows"] = format_amounts(t["rows"], columns=["DEBE", "HABER"])
-    return render_template("accounting.html", title=title, tables=tables)
+    return render_template("accounting.html", title=title, tables=tables, env=env.lower())
 
 
 @bp.route("/accounting/dhf")
