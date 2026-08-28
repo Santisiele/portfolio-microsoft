@@ -61,7 +61,8 @@ PAYMENTS = """
 SELECT gval_numoperacion,
     gval_empresaname, 
     gval_importe,
-    gval_fechaconfirmacion
+    gval_fechaconfirmacion,
+    gval_descripcion
 FROM gval_operacionpagoalcliente
 WHERE statuscodename = 'Pagada' 
 AND gval_tiponame = 'Adelanto'
