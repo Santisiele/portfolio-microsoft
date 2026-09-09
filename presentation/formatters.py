@@ -6,6 +6,7 @@ AMOUNT_COLUMNS = ["Importe"]
 CUIT_COLUMNS = ["Cuit Librador"]
 STATE_COLUMNS = ["Estado"]
 
+
 STATE_LABELS = {
     "CARTERA": "En cartera",
     "VENDIDO": "Vendido",
@@ -19,6 +20,13 @@ def format_dates(rows, columns=DATE_COLUMNS):
             if isinstance(value, (date, datetime)):
                 row[col] = value.strftime("%d/%m/%Y")
     return rows
+
+
+def format_ars(value):
+    if value is None:
+        return "--"
+    s = f"{float(value):,.2f}"
+    return "$" + s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
 
 
 def format_amounts(rows, columns=AMOUNT_COLUMNS):
