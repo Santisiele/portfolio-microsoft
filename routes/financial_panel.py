@@ -18,6 +18,16 @@ def _cards(metric, label):
     ]
 
 
+def _balance_cards(balances):
+    return [{"title": "Saldo " + balance["name"], "value": format_ars(balance["amount"])}
+            for balance in balances]
+
+
+def _balance_total_card(balances):
+    amounts = [balance["amount"] for balance in balances if balance["amount"] is not None]
+    return [{"title": "Saldo total", "value": format_ars(sum(amounts) if amounts else None)}]
+
+
 @bp.route("/panel")
 def index():
     guard = _require_login()
@@ -28,4 +38,7 @@ def index():
         _cards(panel["guaranteed"], "Cheques garantizados"),
         _cards(panel["checking_account"], "Cuenta corriente"),
     ]
+    if panel["balances"]:
+        groups.append(_balance_cards(panel["balances"]))
+        groups.append(_balance_total_card(panel["balances"]))
     return render_template("financial_panel.html", groups=groups)

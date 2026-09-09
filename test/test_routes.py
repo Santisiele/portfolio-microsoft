@@ -75,6 +75,11 @@ def _panel_data():
     return {
         "guaranteed": {"dhf": Decimal("100"), "confinance": Decimal("50"), "total": Decimal("150")},
         "checking_account": {"dhf": None, "confinance": Decimal("25"), "total": Decimal("25")},
+        "balances": [
+            {"name": "Confinance", "amount": 362440619.0},
+            {"name": "DHF", "amount": 183120474.0},
+            {"name": "SC1", "amount": 878315440.61},
+        ],
     }
 
 
@@ -96,3 +101,14 @@ def test_panel_shows_dashes_for_missing_amount(client, monkeypatch):
     _login(client)
     html = client.get("/panel").get_data(as_text=True)
     assert "--" in html
+
+
+def test_panel_shows_balance_cards_and_their_sum(client, monkeypatch):
+    import routes.financial_panel as rp
+    monkeypatch.setattr(rp, "build_financial_panel", _panel_data)
+    _login(client)
+    html = client.get("/panel").get_data(as_text=True)
+    assert "Saldo Confinance" in html
+    assert "$878.315.440,61" in html
+    assert "Saldo total" in html
+    assert "$1.423.876.533,61" in html
