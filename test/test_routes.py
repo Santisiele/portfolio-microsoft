@@ -108,7 +108,16 @@ def test_panel_shows_balance_cards_and_their_sum(client, monkeypatch):
     monkeypatch.setattr(rp, "build_financial_panel", _panel_data)
     _login(client)
     html = client.get("/panel").get_data(as_text=True)
-    assert "Saldo Confinance" in html
+    assert "Saldos de cuentas" in html
     assert "$878.315.440,61" in html
-    assert "Saldo total" in html
     assert "$1.423.876.533,61" in html
+
+
+def test_panel_has_a_jump_link_per_group(client, monkeypatch):
+    import routes.financial_panel as rp
+    monkeypatch.setattr(rp, "build_financial_panel", _panel_data)
+    _login(client)
+    html = client.get("/panel").get_data(as_text=True)
+    for group_id in ("garantizados", "cuenta-corriente", "saldos"):
+        assert 'href="#' + group_id + '"' in html
+        assert 'id="' + group_id + '"' in html
