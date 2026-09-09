@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Panel{% endblock %}
+
+{% macro money_card(card) %}
+  <div class="col-12 col-md-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-body d-flex flex-column">
+        <div class="text-muted small mb-4">{{ card.title }}</div>
+        <div class="text-center mt-auto">
+          <div class="fs-2 fw-semibold">{{ card.value }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+{% block content %}
+
+  <h1 class="h3 mb-3">Panel financiero</h1>
+
+  <div class="d-flex flex-wrap gap-2 mb-5">
+    {% for group in groups %}
+      <a class="btn btn-outline-secondary btn-sm" href="#{{ group.id }}">{{ group.title }}</a>
+    {% endfor %}
+  </div>
+
+  {% for group in groups %}
+    <section id="{{ group.id }}" class="panel-group mb-5">
+      <h2 class="h6 text-uppercase text-muted mb-3">{{ group.title }}</h2>
+      <div class="row g-3">
+        {% for card in group.cards %}{{ money_card(card) }}{% endfor %}
+      </div>
+      {% if group.total %}
+        <div class="row g-3 justify-content-center">{{ money_card(group.total) }}</div>
+      {% endif %}
+    </section>
+  {% endfor %}
+
+{% endblock %}

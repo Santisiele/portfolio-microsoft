@@ -49,7 +49,12 @@
           </li>
           <li class="nav-item">
             <a class="nav-link {% if request.endpoint == 'accounting.confinance' %}active{% endif %}" href="{{ url_for('accounting.confinance') }}">
-              <i class="bi bi-bank2 me-2"></i>Asientos Confinance
+              <i class="bi bi-bank me-2"></i>Asientos Confinance
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'panel.index' %}active{% endif %}" href="{{ url_for('panel.index') }}">
+              <i class="bi bi-graph-up-arrow me-2"></i>Panel financiero
             </a>
           </li>
         </ul>

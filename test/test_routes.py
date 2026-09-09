@@ -1,4 +1,5 @@
 import pytest
+from decimal import Decimal
 
 
 @pytest.fixture
@@ -63,3 +64,60 @@ def test_pending_states_survive_the_pipeline(monkeypatch):
     assert "Pendiente" in states
     assert "Pendiente de pago" in states
     assert any(s in ("Pendiente", "Pendiente de pago") for s in states)
+
+
+def test_panel_redirects_without_login(client):
+    r = client.get("/panel")
+    assert r.status_code == 302
+
+
+def _panel_data():
+    return {
+        "guaranteed": {"dhf": Decimal("100"), "confinance": Decimal("50"), "total": Decimal("150")},
+        "checking_account": {"dhf": None, "confinance": Decimal("25"), "total": Decimal("25")},
+        "balances": [
+            {"name": "Confinance", "amount": 362440619.0},
+            {"name": "DHF", "amount": 183120474.0},
+            {"name": "SC1", "amount": 878315440.61},
+        ],
+    }
+
+
+def test_panel_shows_guaranteed_amounts(client, monkeypatch):
+    import routes.financial_panel as rp
+    monkeypatch.setattr(rp, "build_financial_panel", _panel_data)
+    _login(client)
+    r = client.get("/panel")
+    assert r.status_code == 200
+    html = r.get_data(as_text=True)
+    assert "$100,00" in html
+    assert "$50,00" in html
+    assert "$150,00" in html
+
+
+def test_panel_shows_dashes_for_missing_amount(client, monkeypatch):
+    import routes.financial_panel as rp
+    monkeypatch.setattr(rp, "build_financial_panel", _panel_data)
+    _login(client)
+    html = client.get("/panel").get_data(as_text=True)
+    assert "--" in html
+
+
+def test_panel_shows_balance_cards_and_their_sum(client, monkeypatch):
+    import routes.financial_panel as rp
+    monkeypatch.setattr(rp, "build_financial_panel", _panel_data)
+    _login(client)
+    html = client.get("/panel").get_data(as_text=True)
+    assert "Saldos de cuentas" in html
+    assert "$878.315.440,61" in html
+    assert "$1.423.876.533,61" in html
+
+
+def test_panel_has_a_jump_link_per_group(client, monkeypatch):
+    import routes.financial_panel as rp
+    monkeypatch.setattr(rp, "build_financial_panel", _panel_data)
+    _login(client)
+    html = client.get("/panel").get_data(as_text=True)
+    for group_id in ("garantizados", "cuenta-corriente", "saldos"):
+        assert 'href="#' + group_id + '"' in html
+        assert 'id="' + group_id + '"' in html

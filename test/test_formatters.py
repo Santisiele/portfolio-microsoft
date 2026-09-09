@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal
-from presentation import format_dates, format_amounts, format_cuits
+from presentation import format_dates, format_amounts, format_cuits, format_ars
 
 
 def test_formats_date_to_ddmmyyyy():
@@ -57,3 +57,19 @@ def test_leaves_none_cuit_untouched():
 def test_leaves_invalid_length_cuit_untouched():
     rows = [{"Cuit Librador": "123"}]
     assert format_cuits(rows)[0]["Cuit Librador"] == "123"
+
+
+def test_none_shows_dashes():
+    assert format_ars(None) == "--"
+ 
+ 
+def test_argentine_thousands_and_decimals():
+    assert format_ars(Decimal("180000000")) == "$180.000.000,00"
+ 
+ 
+def test_decimal_places():
+    assert format_ars(1234.5) == "$1.234,50"
+ 
+ 
+def test_zero_is_not_dashes():
+    assert format_ars(0) == "$0,00"

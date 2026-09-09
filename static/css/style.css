@@ -129,3 +129,11 @@
     width: auto !important;
   }
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+.panel-group {
+  scroll-margin-top: 4.5rem;
+}
