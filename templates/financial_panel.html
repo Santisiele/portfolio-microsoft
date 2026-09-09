@@ -31,7 +31,7 @@
         {% for card in group.cards %}{{ money_card(card) }}{% endfor %}
       </div>
       {% if group.total %}
-        <div class="row g-3 justify-content-center">{{ money_card(group.total) }}</div>
+        <div class="row g-3 justify-content-center mt-3">{{ money_card(group.total) }}</div>
       {% endif %}
     </section>
   {% endfor %}
