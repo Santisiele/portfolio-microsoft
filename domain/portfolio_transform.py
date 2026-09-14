@@ -60,7 +60,7 @@ def put_interest_real_rate(rows):
 
         real_comission_rate = raw_commission_rate - 1.2 if raw_commission_rate > 1.2 else raw_commission_rate
 
-        real_interest_rate = raw_interest_rate + real_comission_rate / days * 365
+        real_interest_rate = raw_interest_rate + real_comission_rate / days * 360
         row["Tasa"] = real_interest_rate
         result.append(row)
     return result 
