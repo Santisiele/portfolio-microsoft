@@ -84,7 +84,7 @@ def test_keeps_row_with_missing_keys():
     assert eliminate_duplicate_checks([row]) == [row]
 
 
-def _rate_row(days=365, interest=5, commission=3.2):
+def _rate_row(days=360, interest=5, commission=3.2):
     return {"Dias": days, "Tasa de Interes": interest, "Comision": commission}
 
 
@@ -108,13 +108,13 @@ def test_real_rate_keeps_commission_below_threshold():
     assert out[0]["Tasa"] == pytest.approx(6.0)
 
 
-def test_real_rate_annualizes_commission_by_days():
-    out = put_interest_real_rate([_rate_row(days=73, commission=2.2)])
+def test_real_rate_annualizes_commission_on_360_day_year():
+    out = put_interest_real_rate([_rate_row(days=72, commission=2.2)])
     assert out[0]["Tasa"] == pytest.approx(10.0)
 
 
 def test_real_rate_accepts_decimals_from_crm():
-    row = {"Dias": Decimal("365"), "Tasa de Interes": Decimal("5"), "Comision": Decimal("3.2")}
+    row = {"Dias": Decimal("360"), "Tasa de Interes": Decimal("5"), "Comision": Decimal("3.2")}
     assert put_interest_real_rate([row])[0]["Tasa"] == pytest.approx(7.0)
 
 
