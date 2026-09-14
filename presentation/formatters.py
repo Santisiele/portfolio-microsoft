@@ -5,6 +5,7 @@ DATE_COLUMNS = ["Fecha Compra", "Fecha Pago", "Fecha Acr."]
 AMOUNT_COLUMNS = ["Importe"]
 CUIT_COLUMNS = ["Cuit Librador"]
 STATE_COLUMNS = ["Estado"]
+PERCENTAGE_COLUMNS = ["Tasa"]
 
 
 STATE_LABELS = {
@@ -59,4 +60,13 @@ def format_cuits(rows, columns=CUIT_COLUMNS):
                 digits = "".join(ch for ch in str(value) if ch.isdigit())
             if len(digits) == 11:
                 row[col] = f"{digits[:2]}-{digits[2:10]}-{digits[10:]}"
+    return rows
+
+def format_percentages(rows, columns=PERCENTAGE_COLUMNS):
+    for row in rows:
+        for col in columns:
+            value = row.get(col)
+            if value is None:
+                continue
+            row[col] = f"{float(value):.2f}%"
     return rows

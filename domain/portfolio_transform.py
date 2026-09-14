@@ -37,3 +37,30 @@ def put_company_name(rows):
         row["Empresa"] = "CRM-" + origin
         result.append(row)
     return result
+
+RATE_COLUMNS = ("Dias", "Tasa de Interes", "Comision")
+
+
+def _has_rate_data(row):
+    if any(row.get(col) is None for col in RATE_COLUMNS):
+        return False
+    return float(row.get("Dias")) != 0
+
+
+def put_interest_real_rate(rows):
+    result = []
+    for row in rows:
+        if not _has_rate_data(row):
+            row["Tasa"] = None
+            result.append(row)
+            continue
+        days = float(row.get("Dias"))
+        raw_interest_rate = float(row.get("Tasa de Interes"))
+        raw_commission_rate = float(row.get("Comision"))
+
+        real_comission_rate = raw_commission_rate - 1.2 if raw_commission_rate > 1.2 else raw_commission_rate
+
+        real_interest_rate = raw_interest_rate + real_comission_rate / days * 365
+        row["Tasa"] = real_interest_rate
+        result.append(row)
+    return result 

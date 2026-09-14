@@ -121,3 +121,33 @@ def test_panel_has_a_jump_link_per_group(client, monkeypatch):
     for group_id in ("garantizados", "cuenta-corriente", "saldos"):
         assert 'href="#' + group_id + '"' in html
         assert 'id="' + group_id + '"' in html
+
+
+def test_portfolio_shows_real_rate_as_percentage(client, monkeypatch):
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "X", "Importe": 100, "Origen": "DHF",
+                                  "Tasa de Interes": Decimal("5"), "Tasa": 20.5}])
+    _login(client)
+    html = client.get("/portfolio/table").get_data(as_text=True)
+    assert "20.50%" in html
+    assert "Tasa de Interes" not in html
+
+
+def test_portfolio_sorts_rate_as_number(client, monkeypatch):
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "X", "Importe": 100, "Origen": "DHF", "Tasa": 9.5}])
+    _login(client)
+    html = client.get("/portfolio/table").get_data(as_text=True)
+    assert 'data-type="number">Tasa<' in html
+
+
+def test_portfolio_renders_rows_without_interest_rate(client, monkeypatch):
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "Y", "Importe": 50, "Origen": "BOLSA"}])
+    _login(client)
+    r = client.get("/portfolio/table")
+    assert r.status_code == 200
+    assert "BOLSA" in r.get_data(as_text=True)

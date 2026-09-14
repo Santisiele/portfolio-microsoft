@@ -3,10 +3,10 @@
 {% block main_class %}container-fluid px-4 py-4{% endblock %}
 {% block content %}
 
-  {% set columns = ["Cliente", "Fecha Acr.", "Fecha Compra", "Firmante", "Importe", "Cuit Librador", "Origen", "Empresa", "Estado"] %}
-  {% set col_types = {"Importe": "number", "Fecha Compra": "date", "Fecha Acr.": "date"} %}
+  {% set columns = ["Cliente", "Fecha Acr.", "Fecha Compra", "Firmante", "Importe", "Cuit Librador", "Origen", "Empresa", "Estado", "Tasa"] %}
+  {% set col_types = {"Importe": "number", "Fecha Compra": "date", "Fecha Acr.": "date", "Tasa": "number"} %}
   {% set right_cols = ["Importe"] %}
-  {% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Acr.", "Origen", "Empresa", "Estado"] %}
+  {% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Acr.", "Origen", "Empresa", "Estado", "Tasa"] %}
   {% set nowrap_cols = ["Cuit Librador", "Fecha Compra", "Fecha Acr.", "Importe"] %}
 
   {% set origin_class = {"DHF": "origin-dhf", "CONFINANCE": "origin-confinance", "BOLSA": "origin-bolsa"} %}
