@@ -14,7 +14,7 @@ def _crm_row():
         "Importe": Decimal("100"),
         "Tasa de Interes": Decimal("5"),
         "Comision": Decimal("3.2"),
-        "Dias": Decimal("365"),
+        "Dias": Decimal("360"),
     }
 
 
