@@ -151,3 +151,25 @@ def test_portfolio_renders_rows_without_interest_rate(client, monkeypatch):
     r = client.get("/portfolio/table")
     assert r.status_code == 200
     assert "BOLSA" in r.get_data(as_text=True)
+
+
+def test_portfolio_has_purchase_date_filter(client, monkeypatch):
+    from datetime import date
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "X", "Importe": 100, "Origen": "DHF",
+                                  "Fecha Compra": date(2026, 9, 3)}])
+    _login(client)
+    html = client.get("/portfolio/table").get_data(as_text=True)
+    assert 'id="f-compra-from"' in html
+    assert 'id="f-compra-to"' in html
+    assert 'data-compra="2026-09-03"' in html
+
+
+def test_portfolio_row_without_purchase_date_has_empty_attribute(client, monkeypatch):
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "Y", "Importe": 50, "Origen": "BOLSA"}])
+    _login(client)
+    html = client.get("/portfolio/table").get_data(as_text=True)
+    assert 'data-compra=""' in html
