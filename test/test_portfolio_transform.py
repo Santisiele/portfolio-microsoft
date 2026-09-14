@@ -1,5 +1,9 @@
 from datetime import date
-from domain.portfolio_transform import put_acreditation_date, eliminate_duplicate_checks
+from decimal import Decimal
+
+import pytest
+
+from domain.portfolio_transform import put_acreditation_date, eliminate_duplicate_checks, put_interest_real_rate
 
 TODAY = date(2026, 8, 4)
 
@@ -78,3 +82,76 @@ def test_keeps_others_and_preserves_order():
 def test_keeps_row_with_missing_keys():
     row = {"Firmante": "X"}
     assert eliminate_duplicate_checks([row]) == [row]
+
+
+def _rate_row(days=365, interest=5, commission=3.2):
+    return {"Dias": days, "Tasa de Interes": interest, "Comision": commission}
+
+
+def test_real_rate_adds_interest_and_annualized_commission():
+    out = put_interest_real_rate([_rate_row(interest=10, commission=1.0)])
+    assert out[0]["Tasa"] == pytest.approx(11.0)
+
+
+def test_real_rate_subtracts_fixed_commission_above_threshold():
+    out = put_interest_real_rate([_rate_row(commission=3.2)])
+    assert out[0]["Tasa"] == pytest.approx(7.0)
+
+
+def test_real_rate_keeps_commission_at_threshold():
+    out = put_interest_real_rate([_rate_row(commission=1.2)])
+    assert out[0]["Tasa"] == pytest.approx(6.2)
+
+
+def test_real_rate_keeps_commission_below_threshold():
+    out = put_interest_real_rate([_rate_row(commission=1.0)])
+    assert out[0]["Tasa"] == pytest.approx(6.0)
+
+
+def test_real_rate_annualizes_commission_by_days():
+    out = put_interest_real_rate([_rate_row(days=73, commission=2.2)])
+    assert out[0]["Tasa"] == pytest.approx(10.0)
+
+
+def test_real_rate_accepts_decimals_from_crm():
+    row = {"Dias": Decimal("365"), "Tasa de Interes": Decimal("5"), "Comision": Decimal("3.2")}
+    assert put_interest_real_rate([row])[0]["Tasa"] == pytest.approx(7.0)
+
+
+def test_real_rate_keeps_the_other_columns():
+    row = {"Firmante": "X", **_rate_row()}
+    out = put_interest_real_rate([row])
+    assert out[0]["Firmante"] == "X"
+    assert out[0]["Tasa de Interes"] == 5
+
+
+def test_real_rate_keeps_every_row_in_order():
+    out = put_interest_real_rate([_rate_row(days=30), _rate_row(days=60)])
+    assert [row["Dias"] for row in out] == [30, 60]
+
+
+def test_real_rate_is_none_without_days():
+    out = put_interest_real_rate([_rate_row(days=None)])
+    assert out[0]["Tasa"] is None
+
+
+def test_real_rate_is_none_without_interest():
+    out = put_interest_real_rate([_rate_row(interest=None)])
+    assert out[0]["Tasa"] is None
+
+
+def test_real_rate_is_none_without_commission():
+    out = put_interest_real_rate([_rate_row(commission=None)])
+    assert out[0]["Tasa"] is None
+
+
+def test_real_rate_is_none_with_zero_days():
+    out = put_interest_real_rate([_rate_row(days=0)])
+    assert out[0]["Tasa"] is None
+
+
+def test_row_without_rate_data_does_not_break_the_others():
+    out = put_interest_real_rate([_rate_row(days=None), _rate_row(commission=3.2)])
+    assert len(out) == 2
+    assert out[0]["Tasa"] is None
+    assert out[1]["Tasa"] == pytest.approx(7.0)

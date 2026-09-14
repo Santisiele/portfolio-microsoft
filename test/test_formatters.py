@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from decimal import Decimal
-from presentation import format_dates, format_amounts, format_cuits, format_ars
+from presentation import format_dates, format_amounts, format_cuits, format_ars, format_percentages
 
 
 def test_formats_date_to_ddmmyyyy():
@@ -73,3 +73,38 @@ def test_decimal_places():
  
 def test_zero_is_not_dashes():
     assert format_ars(0) == "$0,00"
+
+
+def test_formats_percentage_with_two_decimals():
+    rows = [{"Tasa": 20.256}]
+    assert format_percentages(rows)[0]["Tasa"] == "20.26%"
+
+
+def test_formats_percentage_from_decimal():
+    rows = [{"Tasa": Decimal("19.87")}]
+    assert format_percentages(rows)[0]["Tasa"] == "19.87%"
+
+
+def test_formats_percentage_from_numeric_string():
+    rows = [{"Tasa": "20.15"}]
+    assert format_percentages(rows)[0]["Tasa"] == "20.15%"
+
+
+def test_percentage_always_shows_two_decimals():
+    rows = [{"Tasa": Decimal("20.5")}, {"Tasa": 20.5}, {"Tasa": 20}]
+    assert [row["Tasa"] for row in format_percentages(rows)] == ["20.50%", "20.50%", "20.00%"]
+
+
+def test_leaves_none_percentage_untouched():
+    rows = [{"Tasa": None}]
+    assert format_percentages(rows)[0]["Tasa"] is None
+
+
+def test_percentage_skips_rows_without_the_column():
+    rows = [{"Importe": 100}]
+    assert format_percentages(rows) == [{"Importe": 100}]
+
+
+def test_percentage_columns_are_configurable():
+    rows = [{"Tasa de Interes": 4.25}]
+    assert format_percentages(rows, columns=["Tasa de Interes"])[0]["Tasa de Interes"] == "4.25%"

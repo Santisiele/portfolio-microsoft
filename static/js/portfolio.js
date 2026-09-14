@@ -5,6 +5,8 @@
     cliente: document.getElementById("f-cliente"),
     acrFrom: document.getElementById("f-acr-from"),
     acrTo: document.getElementById("f-acr-to"),
+    compraFrom: document.getElementById("f-compra-from"),
+    compraTo: document.getElementById("f-compra-to"),
     guaranteed: document.getElementById("guaranteed"),
     count: document.getElementById("count"),
     totalFixed: document.getElementById("total-fixed"),
@@ -80,6 +82,16 @@
     els.acrTo.max = acrMax;
   }
 
+  const compraDates = rows.map((tr) => tr.dataset.compra).filter(Boolean).sort();
+  const compraMin = compraDates.length ? compraDates[0] : "";
+  const compraMax = compraDates.length ? compraDates[compraDates.length - 1] : "";
+  if (compraDates.length && els.compraFrom && els.compraTo) {
+    els.compraFrom.min = compraMin;
+    els.compraFrom.max = compraMax;
+    els.compraTo.min = compraMin;
+    els.compraTo.max = compraMax;
+  }
+
   function isGuaranteed(tr) {
     return tr.dataset.account === "5005" && tr.dataset.state === "Vendido";
   }
@@ -111,6 +123,8 @@
     const clienteQ = els.cliente.value.trim().toLowerCase();
     const acrFrom = els.acrFrom ? els.acrFrom.value : "";
     const acrTo = els.acrTo ? els.acrTo.value : "";
+    const compraFrom = els.compraFrom ? els.compraFrom.value : "";
+    const compraTo = els.compraTo ? els.compraTo.value : "";
     const origins = selectedOrigins();
     const companies = selectedCompanies();
     const states = selectedStates();
@@ -129,7 +143,9 @@
       const okState = states.length === 0 || states.indexOf(tr.dataset.state) !== -1;
       const acr = tr.dataset.acr;
       const okAcr = !acr || ((!acrFrom || acr >= acrFrom) && (!acrTo || acr <= acrTo));
-      const show = inBase && okCuit && okFirmante && okCliente && okOrigin && okCompany && okState && okAcr;
+      const compra = tr.dataset.compra;
+      const okCompra = !compra || ((!compraFrom || compra >= compraFrom) && (!compraTo || compra <= compraTo));
+      const show = inBase && okCuit && okFirmante && okCliente && okOrigin && okCompany && okState && okAcr && okCompra;
       tr.style.display = show ? "" : "none";
       if (show) visible.push(tr);
     });
@@ -159,6 +175,8 @@
       els.acrFrom.value = acrMin;
       els.acrTo.value = "";
     }
+    if (els.compraFrom) els.compraFrom.value = "";
+    if (els.compraTo) els.compraTo.value = "";
     syncCompanyOptions();
     apply();
   }
@@ -205,7 +223,7 @@
   [els.cuit, els.firmante, els.cliente].forEach(function (el) {
     if (el) el.addEventListener("input", apply);
   });
-  [els.acrFrom, els.acrTo].forEach(function (el) {
+  [els.acrFrom, els.acrTo, els.compraFrom, els.compraTo].forEach(function (el) {
     if (el) el.addEventListener("change", apply);
   });
   if (els.guaranteed) els.guaranteed.addEventListener("change", apply);
