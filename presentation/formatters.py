@@ -1,3 +1,4 @@
+import math
 from datetime import date, datetime
 from decimal import Decimal
 
@@ -62,11 +63,19 @@ def format_cuits(rows, columns=CUIT_COLUMNS):
                 row[col] = f"{digits[:2]}-{digits[2:10]}-{digits[10:]}"
     return rows
 
+def _percentage_number(value):
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return None if math.isnan(number) else number
+
+
 def format_percentages(rows, columns=PERCENTAGE_COLUMNS):
     for row in rows:
         for col in columns:
-            value = row.get(col)
-            if value is None:
+            if col not in row:
                 continue
-            row[col] = f"{float(value):.2f}%"
+            number = _percentage_number(row[col])
+            row[col] = None if number is None else f"{number:.2f}%"
     return rows

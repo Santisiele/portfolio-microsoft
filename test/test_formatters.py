@@ -1,3 +1,4 @@
+import math
 from datetime import date, datetime
 from decimal import Decimal
 from presentation import format_dates, format_amounts, format_cuits, format_ars, format_percentages
@@ -108,3 +109,18 @@ def test_percentage_skips_rows_without_the_column():
 def test_percentage_columns_are_configurable():
     rows = [{"Tasa de Interes": 4.25}]
     assert format_percentages(rows, columns=["Tasa de Interes"])[0]["Tasa de Interes"] == "4.25%"
+
+
+def test_empty_sheet_cell_leaves_percentage_blank():
+    rows = [{"Tasa": math.nan}]
+    assert format_percentages(rows)[0]["Tasa"] is None
+
+
+def test_blank_text_leaves_percentage_blank():
+    rows = [{"Tasa": ""}]
+    assert format_percentages(rows)[0]["Tasa"] is None
+
+
+def test_non_numeric_text_leaves_percentage_blank():
+    rows = [{"Tasa": "sin dato"}]
+    assert format_percentages(rows)[0]["Tasa"] is None

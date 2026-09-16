@@ -173,3 +173,13 @@ def test_portfolio_row_without_purchase_date_has_empty_attribute(client, monkeyp
     _login(client)
     html = client.get("/portfolio/table").get_data(as_text=True)
     assert 'data-compra=""' in html
+
+
+def test_portfolio_leaves_empty_sheet_rate_blank(client, monkeypatch):
+    import math
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "Y", "Importe": 50, "Origen": "BOLSA", "Tasa": math.nan}])
+    _login(client)
+    html = client.get("/portfolio/table").get_data(as_text=True)
+    assert "nan" not in html.lower().split("<tbody")[1]
