@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Tasas{% endblock %}
+{% block main_class %}container-fluid px-4 py-4{% endblock %}
+{% block content %}
+
+  <div class="d-flex flex-wrap align-items-end gap-3 mb-3">
+    <h1 class="h3 mb-0 me-auto">Tasas</h1>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">← Volver</a>
+  </div>
+
+  {% for table in tables %}
+    <div class="card shadow-sm mb-4">
+      <div class="card-header d-flex align-items-center gap-2">
+        <span class="fw-semibold">{{ table.title }}</span>
+        <span class="text-muted small">({{ table.rows|length }})</span>
+      </div>
+      <div class="card-body p-0">
+        {% if table.rows %}
+          <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  {% for col in table.columns %}
+                    <th class="text-nowrap {% if col not in text_columns %}text-end{% endif %}">{{ col }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in table.rows %}
+                  <tr class="{% if row.is_total %}table-secondary fw-semibold{% endif %}">
+                    {% for col in table.columns %}
+                      <td class="text-nowrap {% if col not in text_columns %}text-end{% endif %}">{{ row.get(col) or "" }}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted p-3 mb-0">Sin resultados.</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+
+{% endblock %}

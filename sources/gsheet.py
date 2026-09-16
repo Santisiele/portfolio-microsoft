@@ -1,11 +1,17 @@
 import pandas as pd
 
 GVIZ_CSV = "https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&headers=0"
+EXPORT_CSV = "https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
 
 
 def read_public_sheet(csv_url):
     df = pd.read_csv(csv_url)
     return df.to_dict(orient="records")
+
+
+def read_tab_grid(sheet_id, gid):
+    df = pd.read_csv(EXPORT_CSV.format(sheet_id=sheet_id, gid=gid), header=None, dtype=str).fillna("")
+    return df.values.tolist()
 
 
 def read_first_tab_grid(sheet_id):
