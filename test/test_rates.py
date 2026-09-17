@@ -1,3 +1,5 @@
+from datetime import date
+
 from domain.rates import build_rate_rows, sheet_columns, to_advance_rate
 
 GRID = [
@@ -55,28 +57,48 @@ RATE_GRID = [
     ["2025-12", "TOTAL MES", "$67,697,785.18", "$48,976,193,947.43", "50.45%"],
 ]
 
+TODAY = date(2026, 8, 12)
 
-def test_advance_rate_uses_cost_over_numeral_on_360_days():
-    rows = to_advance_rate(build_rate_rows(RATE_GRID))
-    assert rows[0]["Tasa Total"] == "48.15%"
+
+def test_advance_rate_converts_the_overdue_rate():
+    rows = to_advance_rate(build_rate_rows(RATE_GRID), today=TODAY)
+    assert rows[0]["Tasa Total"] == "46.88%"
 
 
 def test_advance_rate_also_converts_the_total_row():
-    rows = to_advance_rate(build_rate_rows(RATE_GRID))
-    assert rows[1]["is_total"] and rows[1]["Tasa Total"] == "49.76%"
+    rows = to_advance_rate(build_rate_rows(RATE_GRID), today=TODAY)
+    assert rows[1]["is_total"] and rows[1]["Tasa Total"] == "48.38%"
+
+
+def test_advance_rate_uses_todays_day_for_the_current_month():
+    grid = [RATE_GRID[0], ["2026-09", "CONFINANCE", "$37,144,153.84", "$61,333,263,000.00", "22.10%"]]
+    rows = to_advance_rate(build_rate_rows(grid), today=date(2026, 9, 17))
+    assert rows[0]["Tasa Total"] == "21.88%"
+
+
+def test_advance_rate_uses_the_full_month_once_it_ended():
+    grid = [RATE_GRID[0], ["2026-09", "CONFINANCE", "$37,144,153.84", "$61,333,263,000.00", "22.10%"]]
+    media_mes = to_advance_rate(build_rate_rows(grid), today=date(2026, 9, 17))[0]["Tasa Total"]
+    mes_cerrado = to_advance_rate(build_rate_rows(grid), today=date(2026, 10, 5))[0]["Tasa Total"]
+    assert media_mes == "21.88%" and mes_cerrado == "21.71%"
 
 
 def test_advance_rate_leaves_the_other_columns_untouched():
-    rows = to_advance_rate(build_rate_rows(RATE_GRID))
+    rows = to_advance_rate(build_rate_rows(RATE_GRID), today=TODAY)
     assert rows[0]["Suma Costo"] == "$20,031,084.05"
     assert rows[0]["Hoja"] == "CONFINANCE"
 
 
 def test_advance_rate_without_numeral_is_blank():
     grid = [RATE_GRID[0], ["2025-12", "CONFINANCE", "$20,031,084.05", "", "48.82%"]]
-    assert to_advance_rate(build_rate_rows(grid))[0]["Tasa Total"] == ""
+    assert to_advance_rate(build_rate_rows(grid), today=TODAY)[0]["Tasa Total"] == ""
 
 
 def test_advance_rate_with_zero_numeral_is_blank():
     grid = [RATE_GRID[0], ["2025-12", "CONFINANCE", "$20,031,084.05", "$0.00", "48.82%"]]
-    assert to_advance_rate(build_rate_rows(grid))[0]["Tasa Total"] == ""
+    assert to_advance_rate(build_rate_rows(grid), today=TODAY)[0]["Tasa Total"] == ""
+
+
+def test_advance_rate_with_a_broken_month_is_blank():
+    grid = [RATE_GRID[0], ["sin mes", "CONFINANCE", "$20,031,084.05", "$14,975,660,641.43", "48.82%"]]
+    assert to_advance_rate(build_rate_rows(grid), today=TODAY)[0]["Tasa Total"] == ""
