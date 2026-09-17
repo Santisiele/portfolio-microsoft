@@ -173,3 +173,38 @@ def test_portfolio_row_without_purchase_date_has_empty_attribute(client, monkeyp
     _login(client)
     html = client.get("/portfolio/table").get_data(as_text=True)
     assert 'data-compra=""' in html
+
+
+def test_portfolio_leaves_empty_sheet_rate_blank(client, monkeypatch):
+    import math
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "Y", "Importe": 50, "Origen": "BOLSA", "Tasa": math.nan}])
+    _login(client)
+    html = client.get("/portfolio/table").get_data(as_text=True)
+    assert "nan" not in html.lower().split("<tbody")[1]
+
+
+def _rate_tables():
+    return [{
+        "title": "Cauciones",
+        "columns": ["Mes", "Hoja", "Suma Capital"],
+        "rows": [
+            {"Mes": "2025-12", "Hoja": "CONFINANCE", "Suma Capital": "$3,758,383,441.43", "is_total": False},
+            {"Mes": "2025-12", "Hoja": "TOTAL MES", "Suma Capital": "$15,057,975,506.43", "is_total": True},
+        ],
+    }]
+
+
+def test_rates_redirects_without_login(client):
+    assert client.get("/tasas").status_code == 302
+
+
+def test_rates_shows_the_table_in_argentine_format(client, monkeypatch):
+    import routes.rates as rr
+    monkeypatch.setattr(rr, "build_rate_tables", _rate_tables)
+    _login(client)
+    html = client.get("/tasas").get_data(as_text=True)
+    assert "Cauciones" in html
+    assert "$3.758.383.441,43" in html
+    assert "table-secondary" in html

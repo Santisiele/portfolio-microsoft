@@ -1,6 +1,7 @@
+import math
 from datetime import date, datetime
 from decimal import Decimal
-from presentation import format_dates, format_amounts, format_cuits, format_ars, format_percentages
+from presentation import format_dates, format_amounts, format_cuits, format_ars, format_percentages, format_sheet_values
 
 
 def test_formats_date_to_ddmmyyyy():
@@ -108,3 +109,44 @@ def test_percentage_skips_rows_without_the_column():
 def test_percentage_columns_are_configurable():
     rows = [{"Tasa de Interes": 4.25}]
     assert format_percentages(rows, columns=["Tasa de Interes"])[0]["Tasa de Interes"] == "4.25%"
+
+
+def test_empty_sheet_cell_leaves_percentage_blank():
+    rows = [{"Tasa": math.nan}]
+    assert format_percentages(rows)[0]["Tasa"] is None
+
+
+def test_blank_text_leaves_percentage_blank():
+    rows = [{"Tasa": ""}]
+    assert format_percentages(rows)[0]["Tasa"] is None
+
+
+def test_non_numeric_text_leaves_percentage_blank():
+    rows = [{"Tasa": "sin dato"}]
+    assert format_percentages(rows)[0]["Tasa"] is None
+
+
+def test_sheet_money_becomes_argentine_format():
+    rows = [{"Suma Capital": "$3,758,383,441.43"}]
+    assert format_sheet_values(rows, ["Suma Capital"])[0]["Suma Capital"] == "$3.758.383.441,43"
+
+
+def test_sheet_percentage_becomes_argentine_format():
+    rows = [{"Tasa Total": "48.82%"}]
+    assert format_sheet_values(rows, ["Tasa Total"])[0]["Tasa Total"] == "48,82%"
+
+
+def test_sheet_decimal_becomes_argentine_format():
+    rows = [{"Dias": "20.96"}]
+    assert format_sheet_values(rows, ["Dias"])[0]["Dias"] == "20,96"
+
+
+def test_sheet_text_is_left_alone():
+    rows = [{"Mes": "2026-01", "Hoja": "CONFINANCE"}]
+    out = format_sheet_values(rows, ["Mes", "Hoja"])[0]
+    assert out["Mes"] == "2026-01" and out["Hoja"] == "CONFINANCE"
+
+
+def test_sheet_empty_value_is_left_alone():
+    rows = [{"Suma Capital": ""}]
+    assert format_sheet_values(rows, ["Suma Capital"])[0]["Suma Capital"] == ""

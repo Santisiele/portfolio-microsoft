@@ -1,3 +1,5 @@
+import math
+import re
 from datetime import date, datetime
 from decimal import Decimal
 
@@ -6,6 +8,10 @@ AMOUNT_COLUMNS = ["Importe"]
 CUIT_COLUMNS = ["Cuit Librador"]
 STATE_COLUMNS = ["Estado"]
 PERCENTAGE_COLUMNS = ["Tasa"]
+
+SHEET_MONEY = re.compile(r"^\$\s*-?[\d,]+(\.\d+)?$")
+SHEET_PERCENT = re.compile(r"^-?[\d,]+(\.\d+)?%$")
+SHEET_DECIMAL = re.compile(r"^-?[\d,]+\.\d+$")
 
 
 STATE_LABELS = {
@@ -23,11 +29,13 @@ def format_dates(rows, columns=DATE_COLUMNS):
     return rows
 
 
+def _argentine(number):
+    text = f"{float(number):,.2f}"
+    return text.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+
+
 def format_ars(value):
-    if value is None:
-        return "--"
-    s = f"{float(value):,.2f}"
-    return "$" + s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+    return "--" if value is None else "$" + _argentine(value)
 
 
 def format_amounts(rows, columns=AMOUNT_COLUMNS):
@@ -62,11 +70,35 @@ def format_cuits(rows, columns=CUIT_COLUMNS):
                 row[col] = f"{digits[:2]}-{digits[2:10]}-{digits[10:]}"
     return rows
 
+def _percentage_number(value):
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return None if math.isnan(number) else number
+
+
 def format_percentages(rows, columns=PERCENTAGE_COLUMNS):
     for row in rows:
         for col in columns:
-            value = row.get(col)
-            if value is None:
+            if col not in row:
                 continue
-            row[col] = f"{float(value):.2f}%"
+            number = _percentage_number(row[col])
+            row[col] = None if number is None else f"{number:.2f}%"
+    return rows
+
+
+def format_sheet_values(rows, columns):
+    for row in rows:
+        for col in columns:
+            value = row.get(col)
+            if not isinstance(value, str):
+                continue
+            text = value.strip()
+            if SHEET_MONEY.match(text):
+                row[col] = format_ars(text.lstrip("$ ").replace(",", ""))
+            elif SHEET_PERCENT.match(text):
+                row[col] = _argentine(text.rstrip("%").replace(",", "")) + "%"
+            elif SHEET_DECIMAL.match(text):
+                row[col] = _argentine(text.replace(",", ""))
     return rows
