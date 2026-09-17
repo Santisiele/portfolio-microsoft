@@ -20,6 +20,7 @@ COLUMN_MAP = {
     "Estado":        "Estado",
     "Fecha Cpra.":   "Fecha Compra",
     "TASA MERCADO":  "Tasa",
+    "Endosante mercado": "Endoso cheque mercado"
 }
 
 DATE_FIELDS = ("Fecha Acr.", "Fecha Compra")
@@ -38,10 +39,16 @@ def _to_rate(value):
     return None if pd.isna(rate) else float(rate) * 100
 
 
+def _to_cell(value):
+    if value is None or (isinstance(value, float) and pd.isna(value)):
+        return ""
+    return value
+
+
 def normalize_stock_market(rows):
     result = []
     for row in rows:
-        new = {canonical: row.get(sheet_col) for sheet_col, canonical in COLUMN_MAP.items()}
+        new = {canonical: _to_cell(row.get(sheet_col)) for sheet_col, canonical in COLUMN_MAP.items()}
         new["Origen"] = row.get("Origen")
         for field in DATE_FIELDS:
             new[field] = _to_date(new[field])

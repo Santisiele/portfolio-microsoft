@@ -40,3 +40,24 @@ def test_sheet_rate_with_non_numeric_text_has_no_value(monkeypatch):
     monkeypatch.setattr(service, "read_public_sheet",
                         lambda url: [{"Empresa": "SC1", "Importe": 50, "TASA MERCADO": "sin dato"}])
     assert service.build_portfolio()[0]["Tasa"] is None
+
+
+def test_sheet_empty_cell_becomes_blank(monkeypatch):
+    import math
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [])
+    monkeypatch.setattr(service, "read_public_sheet",
+                        lambda url: [{"Empresa": "SC1", "Importe": 50, "Endosante mercado": math.nan}])
+    assert service.build_portfolio()[0]["Endoso cheque mercado"] == ""
+
+
+def test_sheet_missing_column_becomes_blank(monkeypatch):
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [])
+    monkeypatch.setattr(service, "read_public_sheet", lambda url: [{"Empresa": "SC1", "Importe": 50}])
+    assert service.build_portfolio()[0]["Endoso cheque mercado"] == ""
+
+
+def test_sheet_endorser_with_value_is_kept(monkeypatch):
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [])
+    monkeypatch.setattr(service, "read_public_sheet",
+                        lambda url: [{"Empresa": "SC1", "Importe": 50, "Endosante mercado": "INC S. A."}])
+    assert service.build_portfolio()[0]["Endoso cheque mercado"] == "INC S. A."

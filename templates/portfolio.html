@@ -3,7 +3,7 @@
 {% block main_class %}container-fluid px-4 py-4{% endblock %}
 {% block content %}
 
-  {% set columns = ["Cliente", "Fecha Acr.", "Fecha Compra", "Firmante", "Importe", "Cuit Librador", "Origen", "Empresa", "Estado", "Tasa"] %}
+  {% set columns = ["Cliente", "Fecha Acr.", "Fecha Compra", "Firmante", "Endoso cheque mercado", "Importe", "Cuit Librador", "Origen", "Empresa", "Estado", "Tasa"] %}
   {% set col_types = {"Importe": "number", "Fecha Compra": "date", "Fecha Acr.": "date", "Tasa": "number"} %}
   {% set right_cols = ["Importe"] %}
   {% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Acr.", "Origen", "Empresa", "Estado", "Tasa"] %}
