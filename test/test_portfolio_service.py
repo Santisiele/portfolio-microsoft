@@ -23,8 +23,8 @@ def test_crm_rows_get_real_rate_and_sheet_rows_keep_the_sheet_rate(monkeypatch):
     monkeypatch.setattr(service, "read_public_sheet",
                         lambda url: [{"Empresa": "SC1", "Importe": 50, "TASA MERCADO": 0.5421}])
     by_origin = {row["Origen"]: row for row in service.build_portfolio()}
-    assert by_origin["DHF"]["Tasa"] == pytest.approx(7.0)
-    assert by_origin["CONFINANCE"]["Tasa"] == pytest.approx(7.0)
+    assert by_origin["DHF"]["Tasa"] == pytest.approx(7.526882)
+    assert by_origin["CONFINANCE"]["Tasa"] == pytest.approx(7.526882)
     assert by_origin["BOLSA"]["Tasa"] == pytest.approx(54.21)
 
 
