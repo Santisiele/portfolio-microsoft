@@ -1,13 +1,9 @@
-import calendar
-from datetime import date
-
 from domain.balances import parse_amount
 
 MONTH_COLUMN = "Mes"
 SHEET_COLUMN = "Hoja"
 RATE_COLUMN = "Tasa Total"
-COST_COLUMN = "Suma Costo"
-NUMERAL_COLUMN = "Numeral"
+TERM_COLUMN = "Días Prom. Ponderados"
 TOTAL_LABEL = "TOTAL MES"
 YEAR_DAYS = 365
 
@@ -44,30 +40,18 @@ def build_rate_rows(grid, excluded=()):
     return rows
 
 
-def _day_number(month, today):
-    parts = month.split("-")
-    if len(parts) < 2 or not parts[0].isdigit() or not parts[1].isdigit():
-        return 0
-    year, number = int(parts[0]), int(parts[1])
-    if not 1 <= number <= 12:
-        return 0
-    if (year, number) == (today.year, today.month):
-        return today.day
-    return calendar.monthrange(year, number)[1]
-
-
-def to_advance_rate(rows, today=None):
-    today = today or date.today()
+def to_arrears_rate(rows):
     for row in rows:
         if RATE_COLUMN not in row:
             continue
-        cost = parse_amount(row.get(COST_COLUMN))
-        numeral = parse_amount(row.get(NUMERAL_COLUMN))
-        days = _day_number(row.get(MONTH_COLUMN, ""), today)
-        if cost is None or not numeral or not days:
+        rate = parse_amount(row.get(RATE_COLUMN))
+        days = parse_amount(row.get(TERM_COLUMN))
+        if rate is None or not days:
             row[RATE_COLUMN] = ""
             continue
-        overdue = cost / numeral * YEAR_DAYS
-        daily = overdue / YEAR_DAYS * days
-        row[RATE_COLUMN] = f"{daily / (1 + daily) / days * YEAR_DAYS * 100:.2f}%"
+        advance = rate / 100 / YEAR_DAYS * days
+        if advance >= 1:
+            row[RATE_COLUMN] = ""
+            continue
+        row[RATE_COLUMN] = f"{advance / (1 - advance) / days * YEAR_DAYS * 100:.2f}%"
     return rows
