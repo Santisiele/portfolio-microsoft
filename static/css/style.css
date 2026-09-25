@@ -137,3 +137,17 @@ html {
 .panel-group {
   scroll-margin-top: 4.5rem;
 }
+
+.disp-confinance   { background: #bfe1f6; color: #0a53a8; }
+.disp-dhf          { background: #b10202; color: #fff;    }
+.disp-dhf-b        { background: #3d3d3d; color: #fff;    }
+.disp-gotark       { background: #d9ead3; color: #11734b; }
+.disp-eyzor        { background: #0a53a8; color: #fff;    }
+.disp-diego        { background: #11734b; color: #fff;    }
+.disp-luciana      { background: #e6d5f5; color: #5a3286; }
+.disp-jorge        { background: #f4cccc; color: #b10202; }
+.disp-inviu-jorge  { background: #fbd5c8; color: #b10202; }
+.disp-hernan       { background: #d9ead3; color: #11734b; }
+.disp-inviu-hernan { background: #d0e0e3; color: #215a6c; }
+.disp-ketzele      { background: #5a3286; color: #fff;    }
+.disp-terceros     { background: #215a6c; color: #fff;    }

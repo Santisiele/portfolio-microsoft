@@ -150,3 +150,17 @@ def test_sheet_text_is_left_alone():
 def test_sheet_empty_value_is_left_alone():
     rows = [{"Suma Capital": ""}]
     assert format_sheet_values(rows, ["Suma Capital"])[0]["Suma Capital"] == ""
+
+
+def test_sheet_negative_money_becomes_argentine_format():
+    rows = [{"Aportes Nominal": "-$110,209,880.94"}]
+    assert format_sheet_values(rows, ["Aportes Nominal"])[0]["Aportes Nominal"] == "-$110.209.880,94"
+
+
+def test_sheet_money_with_sign_after_the_symbol():
+    rows = [{"Aportes Nominal": "$-814,563.60"}]
+    assert format_sheet_values(rows, ["Aportes Nominal"])[0]["Aportes Nominal"] == "-$814.563,60"
+
+
+def test_negative_ars_puts_the_sign_before_the_symbol():
+    assert format_ars(-738813) == "-$738.813,00"

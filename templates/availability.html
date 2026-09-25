@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Disponibilidades{% endblock %}
+{% block main_class %}container-fluid px-4 py-4{% endblock %}
+{% block content %}
+
+  {% set company_class = {
+    "CONSULTATIO CONFINANCE": "disp-confinance",
+    "CONSULTATIO DHF": "disp-dhf",
+    "CONSULTATIO DHF B": "disp-dhf-b",
+    "CONSULTATIO GOTARK": "disp-gotark",
+    "INVIU EYZOR": "disp-eyzor",
+    "CONSULTATIO DIEGO": "disp-diego",
+    "CONSULTATIO LUCIANA": "disp-luciana",
+    "CONSULTATIO JORGE": "disp-jorge",
+    "INVIU JORGE": "disp-inviu-jorge",
+    "CONSULTATIO HERNAN": "disp-hernan",
+    "INVIU HERNAN": "disp-inviu-hernan",
+    "INVIU LA KETZELE": "disp-ketzele",
+    "INVIU TERCEROS A": "disp-terceros"
+  } %}
+
+  <div class="d-flex flex-wrap align-items-end gap-3 mb-3">
+    <h1 class="h3 mb-0 me-auto">Disponibilidades</h1>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">← Volver</a>
+  </div>
+
+  {% if data.rows %}
+    <div class="row g-3 mb-4 justify-content-center">
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body d-flex flex-column">
+            <div class="text-muted small mb-4">Valor actual cheques</div>
+            <div class="text-center mt-auto">
+              <div class="fs-3 fw-semibold text-nowrap">{{ data.cheques }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header d-flex align-items-center gap-2">
+        <span class="fw-semibold">Posiciones por empresa</span>
+        <span class="text-muted small">({{ data.rows|length }})</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-striped table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                {% for col in data.columns %}
+                  <th class="text-nowrap {% if col not in text_columns %}text-end{% endif %}">{{ col }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in data.rows %}
+                <tr class="{% if row.is_total %}table-secondary fw-semibold{% endif %}">
+                  {% for col in data.columns %}
+                    {% set value = row.get(col) %}
+                    {% set tag = company_class.get(value, "") if col in text_columns else "" %}
+                    <td class="text-nowrap {% if col not in text_columns %}text-end{% endif %}">
+                      {% if tag %}<span class="tag {{ tag }}">{{ value }}</span>{% else %}{{ value or "" }}{% endif %}
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p class="text-muted">Sin resultados.</p>
+  {% endif %}
+
+{% endblock %}
