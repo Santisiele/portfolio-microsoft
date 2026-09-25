@@ -90,32 +90,47 @@ def _rate_row(days=360, interest=5, commission=3.2):
 
 def test_real_rate_adds_interest_and_annualized_commission():
     out = put_interest_real_rate([_rate_row(interest=10, commission=1.0)])
-    assert out[0]["Tasa"] == pytest.approx(11.0)
+    assert out[0]["Tasa"] == pytest.approx(12.359551)
 
 
 def test_real_rate_subtracts_fixed_commission_above_threshold():
     out = put_interest_real_rate([_rate_row(commission=3.2)])
-    assert out[0]["Tasa"] == pytest.approx(7.0)
+    assert out[0]["Tasa"] == pytest.approx(7.526882)
 
 
 def test_real_rate_keeps_commission_at_threshold():
     out = put_interest_real_rate([_rate_row(commission=1.2)])
-    assert out[0]["Tasa"] == pytest.approx(6.2)
+    assert out[0]["Tasa"] == pytest.approx(6.609808)
 
 
 def test_real_rate_keeps_commission_below_threshold():
     out = put_interest_real_rate([_rate_row(commission=1.0)])
-    assert out[0]["Tasa"] == pytest.approx(6.0)
+    assert out[0]["Tasa"] == pytest.approx(6.382979)
 
 
 def test_real_rate_annualizes_commission_on_360_day_year():
     out = put_interest_real_rate([_rate_row(days=72, commission=2.2)])
-    assert out[0]["Tasa"] == pytest.approx(10.0)
+    assert out[0]["Tasa"] == pytest.approx(10.204082)
 
 
 def test_real_rate_accepts_decimals_from_crm():
     row = {"Dias": Decimal("360"), "Tasa de Interes": Decimal("5"), "Comision": Decimal("3.2")}
-    assert put_interest_real_rate([row])[0]["Tasa"] == pytest.approx(7.0)
+    assert put_interest_real_rate([row])[0]["Tasa"] == pytest.approx(7.526882)
+
+
+def test_arrears_rate_is_higher_than_the_advance_rate():
+    out = put_interest_real_rate([_rate_row(commission=3.2)])
+    assert out[0]["Tasa"] > 7.0
+
+
+def test_arrears_rate_depends_on_the_term():
+    corto = put_interest_real_rate([_rate_row(days=180, interest=10, commission=1.0)])
+    assert corto[0]["Tasa"] == pytest.approx(12.765957)
+
+
+def test_arrears_rate_is_none_when_the_advance_rate_covers_the_whole_term():
+    out = put_interest_real_rate([_rate_row(days=360, interest=200, commission=0)])
+    assert out[0]["Tasa"] is None
 
 
 def test_real_rate_keeps_the_other_columns():
@@ -154,4 +169,4 @@ def test_row_without_rate_data_does_not_break_the_others():
     out = put_interest_real_rate([_rate_row(days=None), _rate_row(commission=3.2)])
     assert len(out) == 2
     assert out[0]["Tasa"] is None
-    assert out[1]["Tasa"] == pytest.approx(7.0)
+    assert out[1]["Tasa"] == pytest.approx(7.526882)

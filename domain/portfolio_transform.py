@@ -39,12 +39,23 @@ def put_company_name(rows):
     return result
 
 RATE_COLUMNS = ("Dias", "Tasa de Interes", "Comision")
+YEAR_DAYS = 360
 
 
 def _has_rate_data(row):
     if any(row.get(col) is None for col in RATE_COLUMNS):
         return False
     return float(row.get("Dias")) != 0
+
+
+def _convert_an_advance_payment_rate_to_an_arrears_rate(row):
+    days = float(row.get("Dias"))
+    advance = row["Tasa"] / 100 / YEAR_DAYS * days
+    if advance >= 1:
+        row["Tasa"] = None
+        return row
+    row["Tasa"] = advance / (1 - advance) / days * YEAR_DAYS * 100
+    return row
 
 
 def put_interest_real_rate(rows):
@@ -60,7 +71,8 @@ def put_interest_real_rate(rows):
 
         real_comission_rate = raw_commission_rate - 1.2 if raw_commission_rate > 1.2 else raw_commission_rate
 
-        real_interest_rate = raw_interest_rate + real_comission_rate / days * 360
+        real_interest_rate = raw_interest_rate + real_comission_rate / days * YEAR_DAYS
         row["Tasa"] = real_interest_rate
+        row = _convert_an_advance_payment_rate_to_an_arrears_rate(row)
         result.append(row)
-    return result 
+    return result
