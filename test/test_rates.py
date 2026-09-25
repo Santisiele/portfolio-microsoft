@@ -1,6 +1,4 @@
-from datetime import date
-
-from domain.rates import build_rate_rows, sheet_columns, to_advance_rate
+from domain.rates import build_rate_rows, sheet_columns, to_arrears_rate
 
 GRID = [
     ["Mes", "Hoja", "Suma Capital", "Tasa Total"],
@@ -52,53 +50,55 @@ def test_empty_grid_has_no_rows_or_columns():
 
 
 RATE_GRID = [
-    ["Mes", "Hoja", "Suma Costo", "Numeral", "Tasa Total"],
-    ["2025-12", "CONFINANCE", "$20,031,084.05", "$14,975,660,641.43", "48.82%"],
-    ["2025-12", "TOTAL MES", "$67,697,785.18", "$48,976,193,947.43", "50.45%"],
+    ["Mes", "Hoja", "Días Prom. Ponderados", "Suma Costo", "Tasa Total"],
+    ["2026-01", "CONFINANCE", "20.96", "$12,292,188.69", "29.22%"],
+    ["2026-01", "TOTAL MES", "26.63", "$56,973,602.01", "29.67%"],
 ]
 
-TODAY = date(2026, 8, 12)
+
+def test_arrears_rate_converts_the_advance_rate():
+    rows = to_arrears_rate(build_rate_rows(RATE_GRID))
+    assert rows[0]["Tasa Total"] == "29.72%"
 
 
-def test_advance_rate_converts_the_overdue_rate():
-    rows = to_advance_rate(build_rate_rows(RATE_GRID), today=TODAY)
-    assert rows[0]["Tasa Total"] == "46.88%"
+def test_arrears_rate_also_converts_the_total_row():
+    rows = to_arrears_rate(build_rate_rows(RATE_GRID))
+    assert rows[1]["is_total"] and rows[1]["Tasa Total"] == "30.33%"
 
 
-def test_advance_rate_also_converts_the_total_row():
-    rows = to_advance_rate(build_rate_rows(RATE_GRID), today=TODAY)
-    assert rows[1]["is_total"] and rows[1]["Tasa Total"] == "48.38%"
+def test_arrears_rate_is_higher_than_the_advance_rate():
+    rows = to_arrears_rate(build_rate_rows(RATE_GRID))
+    assert float(rows[0]["Tasa Total"].rstrip("%")) > 29.22
 
 
-def test_advance_rate_uses_todays_day_for_the_current_month():
-    grid = [RATE_GRID[0], ["2026-09", "CONFINANCE", "$37,144,153.84", "$61,333,263,000.00", "22.10%"]]
-    rows = to_advance_rate(build_rate_rows(grid), today=date(2026, 9, 17))
-    assert rows[0]["Tasa Total"] == "21.88%"
+def test_arrears_rate_depends_on_the_term():
+    grid = [RATE_GRID[0], ["2026-01", "CONFINANCE", "40.00", "$12,292,188.69", "29.22%"]]
+    largo = to_arrears_rate(build_rate_rows(grid))[0]["Tasa Total"]
+    corto = to_arrears_rate(build_rate_rows(RATE_GRID))[0]["Tasa Total"]
+    assert float(largo.rstrip("%")) > float(corto.rstrip("%"))
 
 
-def test_advance_rate_uses_the_full_month_once_it_ended():
-    grid = [RATE_GRID[0], ["2026-09", "CONFINANCE", "$37,144,153.84", "$61,333,263,000.00", "22.10%"]]
-    media_mes = to_advance_rate(build_rate_rows(grid), today=date(2026, 9, 17))[0]["Tasa Total"]
-    mes_cerrado = to_advance_rate(build_rate_rows(grid), today=date(2026, 10, 5))[0]["Tasa Total"]
-    assert media_mes == "21.88%" and mes_cerrado == "21.71%"
-
-
-def test_advance_rate_leaves_the_other_columns_untouched():
-    rows = to_advance_rate(build_rate_rows(RATE_GRID), today=TODAY)
-    assert rows[0]["Suma Costo"] == "$20,031,084.05"
+def test_arrears_rate_leaves_the_other_columns_untouched():
+    rows = to_arrears_rate(build_rate_rows(RATE_GRID))
+    assert rows[0]["Suma Costo"] == "$12,292,188.69"
     assert rows[0]["Hoja"] == "CONFINANCE"
 
 
-def test_advance_rate_without_numeral_is_blank():
-    grid = [RATE_GRID[0], ["2025-12", "CONFINANCE", "$20,031,084.05", "", "48.82%"]]
-    assert to_advance_rate(build_rate_rows(grid), today=TODAY)[0]["Tasa Total"] == ""
+def test_arrears_rate_without_term_is_blank():
+    grid = [RATE_GRID[0], ["2026-01", "CONFINANCE", "", "$12,292,188.69", "29.22%"]]
+    assert to_arrears_rate(build_rate_rows(grid))[0]["Tasa Total"] == ""
 
 
-def test_advance_rate_with_zero_numeral_is_blank():
-    grid = [RATE_GRID[0], ["2025-12", "CONFINANCE", "$20,031,084.05", "$0.00", "48.82%"]]
-    assert to_advance_rate(build_rate_rows(grid), today=TODAY)[0]["Tasa Total"] == ""
+def test_arrears_rate_with_zero_term_is_blank():
+    grid = [RATE_GRID[0], ["2026-01", "CONFINANCE", "0", "$12,292,188.69", "29.22%"]]
+    assert to_arrears_rate(build_rate_rows(grid))[0]["Tasa Total"] == ""
 
 
-def test_advance_rate_with_a_broken_month_is_blank():
-    grid = [RATE_GRID[0], ["sin mes", "CONFINANCE", "$20,031,084.05", "$14,975,660,641.43", "48.82%"]]
-    assert to_advance_rate(build_rate_rows(grid), today=TODAY)[0]["Tasa Total"] == ""
+def test_arrears_rate_without_rate_is_blank():
+    grid = [RATE_GRID[0], ["2026-01", "CONFINANCE", "20.96", "$12,292,188.69", ""]]
+    assert to_arrears_rate(build_rate_rows(grid))[0]["Tasa Total"] == ""
+
+
+def test_arrears_rate_when_the_advance_rate_covers_the_whole_term_is_blank():
+    grid = [RATE_GRID[0], ["2026-01", "CONFINANCE", "365", "$12,292,188.69", "150.00%"]]
+    assert to_arrears_rate(build_rate_rows(grid))[0]["Tasa Total"] == ""
