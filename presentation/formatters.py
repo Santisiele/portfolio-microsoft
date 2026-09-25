@@ -9,7 +9,7 @@ CUIT_COLUMNS = ["Cuit Librador"]
 STATE_COLUMNS = ["Estado"]
 PERCENTAGE_COLUMNS = ["Tasa"]
 
-SHEET_MONEY = re.compile(r"^\$\s*-?[\d,]+(\.\d+)?$")
+SHEET_MONEY = re.compile(r"^-?\$\s*-?[\d,]+(\.\d+)?$")
 SHEET_PERCENT = re.compile(r"^-?[\d,]+(\.\d+)?%$")
 SHEET_DECIMAL = re.compile(r"^-?[\d,]+\.\d+$")
 
@@ -35,7 +35,10 @@ def _argentine(number):
 
 
 def format_ars(value):
-    return "--" if value is None else "$" + _argentine(value)
+    if value is None:
+        return "--"
+    number = float(value)
+    return ("-$" if number < 0 else "$") + _argentine(abs(number))
 
 
 def format_amounts(rows, columns=AMOUNT_COLUMNS):
@@ -96,7 +99,7 @@ def format_sheet_values(rows, columns):
                 continue
             text = value.strip()
             if SHEET_MONEY.match(text):
-                row[col] = format_ars(text.lstrip("$ ").replace(",", ""))
+                row[col] = format_ars(text.replace("$", "").replace(",", "").strip())
             elif SHEET_PERCENT.match(text):
                 row[col] = _argentine(text.rstrip("%").replace(",", "")) + "%"
             elif SHEET_DECIMAL.match(text):

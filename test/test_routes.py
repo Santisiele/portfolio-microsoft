@@ -208,3 +208,55 @@ def test_rates_shows_the_table_in_argentine_format(client, monkeypatch):
     assert "Cauciones" in html
     assert "$3.758.383.441,43" in html
     assert "table-secondary" in html
+
+
+def _availability():
+    return {
+        "columns": ["Empresa", "Cuota partes", "Valor Patrimonial"],
+        "rows": [
+            {"Empresa": "CONSULTATIO CONFINANCE", "Cuota partes": "8027864.465",
+             "Valor Patrimonial": "$646,370,491.66", "is_total": False},
+            {"Empresa": "Total", "Cuota partes": "175903243.8",
+             "Valor Patrimonial": "$14,162,516,814.18", "is_total": True},
+        ],
+        "cheques": 13783808459.86,
+    }
+
+
+def test_availability_redirects_without_login(client):
+    assert client.get("/disponibilidades").status_code == 302
+
+
+def test_availability_shows_companies_and_cheques(client, monkeypatch):
+    import routes.availability as ra
+    monkeypatch.setattr(ra, "build_availability", _availability)
+    _login(client)
+    html = client.get("/disponibilidades").get_data(as_text=True)
+    assert "CONSULTATIO CONFINANCE" in html
+    assert "$646.370.491,66" in html
+    assert "$13.783.808.459,86" in html
+    assert "table-secondary" in html
+
+
+def test_availability_without_sheet_shows_no_results(client, monkeypatch):
+    import routes.availability as ra
+    monkeypatch.setattr(ra, "build_availability", dict)
+    _login(client)
+    html = client.get("/disponibilidades").get_data(as_text=True)
+    assert "Sin resultados" in html
+
+
+def test_availability_paints_each_company_with_its_colour(client, monkeypatch):
+    import routes.availability as ra
+    monkeypatch.setattr(ra, "build_availability", _availability)
+    _login(client)
+    html = client.get("/disponibilidades").get_data(as_text=True)
+    assert 'class="tag disp-confinance"' in html
+
+
+def test_availability_leaves_the_total_row_without_colour(client, monkeypatch):
+    import routes.availability as ra
+    monkeypatch.setattr(ra, "build_availability", _availability)
+    _login(client)
+    html = client.get("/disponibilidades").get_data(as_text=True)
+    assert "tag disp-" not in html.split("Total")[1]
