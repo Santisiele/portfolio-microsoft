@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from domain.accounting.common import resolve_subaccount
 from domain.accounting import build_collection_entries
 
@@ -56,3 +58,47 @@ def test_concept_is_lowercase_company():
 def test_collection_balances():
     entries = build_collection_entries(_rows(), {"CILBRAKE SRL": 1361400})
     assert sum(e["DEBE"] for e in entries) == sum(e["HABER"] for e in entries)
+
+
+def _negative_row():
+    return [{"Fecha": "2026-08-10", "Empresa": "CILBRAKE SRL", "Importe": -1000}]
+
+
+def test_negative_collection_swaps_debit_and_credit():
+    entries = build_collection_entries(_negative_row(), {"CILBRAKE SRL": 1361400})
+    assert entries[0]["SUBCTA"] == 1120002 and entries[0]["DEBE"] == 0 and entries[0]["HABER"] == 1000
+    assert entries[1]["SUBCTA"] == 1361400 and entries[1]["DEBE"] == 1000 and entries[1]["HABER"] == 0
+
+
+def test_negative_collection_has_no_negative_amounts():
+    entries = build_collection_entries(_negative_row(), {"CILBRAKE SRL": 1361400})
+    assert all(entry["DEBE"] >= 0 and entry["HABER"] >= 0 for entry in entries)
+
+
+def test_negative_collection_balances():
+    entries = build_collection_entries(_negative_row(), {"CILBRAKE SRL": 1361400})
+    assert sum(e["DEBE"] for e in entries) == sum(e["HABER"] for e in entries)
+
+
+def test_negative_collection_keeps_the_concept():
+    entries = build_collection_entries(_negative_row(), {})
+    assert entries[0]["CONCEPTO"] == "Cobranza cilbrake srl"
+
+
+def test_negative_decimal_collection_swaps_debit_and_credit():
+    rows = [{"Fecha": "2026-08-10", "Empresa": "CILBRAKE SRL", "Importe": Decimal("-2500.50")}]
+    entries = build_collection_entries(rows, {"CILBRAKE SRL": 1361400})
+    assert entries[0]["HABER"] == Decimal("2500.50")
+    assert entries[1]["DEBE"] == Decimal("2500.50")
+
+
+def test_zero_collection_keeps_both_sides_in_zero():
+    rows = [{"Fecha": "2026-08-10", "Empresa": "CILBRAKE SRL", "Importe": 0}]
+    entries = build_collection_entries(rows, {"CILBRAKE SRL": 1361400})
+    assert all(entry["DEBE"] == 0 and entry["HABER"] == 0 for entry in entries)
+
+
+def test_positive_collection_is_not_swapped():
+    rows = [{"Fecha": "2026-08-10", "Empresa": "CILBRAKE SRL", "Importe": 1000}]
+    entries = build_collection_entries(rows, {"CILBRAKE SRL": 1361400})
+    assert entries[0]["DEBE"] == 1000 and entries[1]["HABER"] == 1000
