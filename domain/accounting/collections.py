@@ -12,6 +12,7 @@ def build_collection_entries(rows, company_map=None):
         importe = row["Importe"] or 0
         concepto = "Cobranza " + (empresa or "").lower()
         subaccount = resolve_subaccount(empresa, company_map)
-        result.append(line(date, COLLECTION_DEBIT_SUBCUENTA, importe, 0, concepto))
-        result.append(line(date, subaccount, 0, importe, concepto))
+        debe, haber = (0, -importe) if importe < 0 else (importe, 0)
+        result.append(line(date, COLLECTION_DEBIT_SUBCUENTA, debe, haber, concepto))
+        result.append(line(date, subaccount, haber, debe, concepto))
     return result
