@@ -1,4 +1,4 @@
-from domain.availability import availability_columns, build_availability_rows, cheques_value
+from domain.availability import availability_columns, availability_date, build_availability_rows, cheques_value
 
 GRID = [
     ["24/09", "Cuota partes", "Aportes Nominal", "Valor cuota partes", "Valor Patrimonial"],
@@ -57,3 +57,15 @@ def test_cheques_value_is_none_when_the_row_is_missing():
 def test_empty_grid_has_no_rows_or_columns():
     assert build_availability_rows([]) == []
     assert availability_columns([]) == []
+
+
+def test_reads_the_date_from_the_first_cell():
+    assert availability_date(GRID) == "24/09"
+
+
+def test_date_is_blank_when_the_cell_is_empty():
+    assert availability_date([["", "Cuota partes"], ["X", "1"]]) == ""
+
+
+def test_date_is_blank_without_grid():
+    assert availability_date([]) == ""

@@ -212,6 +212,7 @@ def test_rates_shows_the_table_in_argentine_format(client, monkeypatch):
 
 def _availability():
     return {
+        "date": "30/09",
         "columns": ["Empresa", "Cuota partes", "Valor Patrimonial"],
         "rows": [
             {"Empresa": "CONSULTATIO CONFINANCE", "Cuota partes": "8027864.465",
@@ -260,3 +261,11 @@ def test_availability_leaves_the_total_row_without_colour(client, monkeypatch):
     _login(client)
     html = client.get("/disponibilidades").get_data(as_text=True)
     assert "tag disp-" not in html.split("Total")[1]
+
+
+def test_availability_shows_the_sheet_date_next_to_the_title(client, monkeypatch):
+    import routes.availability as ra
+    monkeypatch.setattr(ra, "build_availability", _availability)
+    _login(client)
+    html = client.get("/disponibilidades").get_data(as_text=True)
+    assert ">Disponibilidades al 30/09</h1>" in html

@@ -15,6 +15,10 @@ def _values(line):
     return [_text(line[index]) if index < len(line) else "" for index in range(WIDTH)]
 
 
+def availability_date(grid):
+    return _text(grid[0][0]) if grid and len(grid[0]) else ""
+
+
 def availability_columns(grid):
     if not grid:
         return []
