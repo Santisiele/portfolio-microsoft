@@ -50,6 +50,8 @@ def normalize_stock_market(rows):
     for row in rows:
         new = {canonical: _to_cell(row.get(sheet_col)) for sheet_col, canonical in COLUMN_MAP.items()}
         new["Origen"] = row.get("Origen")
+        if row.get("Estado") == "VENDIDO":
+            continue
         for field in DATE_FIELDS:
             new[field] = _to_date(new[field])
         new[RATE_FIELD] = _to_rate(new[RATE_FIELD])

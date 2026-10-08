@@ -61,3 +61,50 @@ def test_sheet_endorser_with_value_is_kept(monkeypatch):
     monkeypatch.setattr(service, "read_public_sheet",
                         lambda url: [{"Empresa": "SC1", "Importe": 50, "Endosante mercado": "INC S. A."}])
     assert service.build_portfolio()[0]["Endoso cheque mercado"] == "INC S. A."
+
+
+def _sheet(rows):
+    return lambda url: rows
+
+
+def test_sold_sheet_rows_are_dropped(monkeypatch):
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [])
+    monkeypatch.setattr(service, "read_public_sheet",
+                        _sheet([{"Empresa": "SC1", "Importe": 50, "Estado": "VENDIDO"}]))
+    assert service.build_portfolio() == []
+
+
+def test_sheet_rows_in_cartera_are_kept(monkeypatch):
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [])
+    monkeypatch.setattr(service, "read_public_sheet",
+                        _sheet([{"Empresa": "SC1", "Importe": 50, "Estado": "CARTERA"}]))
+    rows = service.build_portfolio()
+    assert len(rows) == 1 and rows[0]["Estado"] == "CARTERA"
+
+
+def test_sheet_rows_without_state_are_kept(monkeypatch):
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [])
+    monkeypatch.setattr(service, "read_public_sheet", _sheet([{"Empresa": "SC1", "Importe": 50}]))
+    assert len(service.build_portfolio()) == 1
+
+
+def test_only_the_sold_sheet_rows_are_dropped(monkeypatch):
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [])
+    monkeypatch.setattr(service, "read_public_sheet", _sheet([
+        {"Empresa": "SC1", "Importe": 50, "Estado": "CARTERA"},
+        {"Empresa": "PLATINUM", "Importe": 70, "Estado": "VENDIDO"},
+        {"Empresa": "CONFINANCE", "Importe": 90, "Estado": "CARTERA"},
+    ]))
+    rows = service.build_portfolio()
+    assert [row["Empresa"] for row in rows] == ["SC1", "CONFINANCE"]
+
+
+def test_crm_sold_cheques_are_kept(monkeypatch):
+    row = _crm_row()
+    row["Estado"] = "Vendido"
+    row["Cuenta Destino"] = "5005"
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [dict(row)])
+    monkeypatch.setattr(service, "read_public_sheet", _sheet([]))
+    rows = service.build_portfolio()
+    assert [r["Origen"] for r in rows] == ["DHF", "CONFINANCE"]
+    assert all(r["Estado"] == "Vendido" for r in rows)
