@@ -6,9 +6,9 @@ from sources.tds import read_tds
 from sources.gsheet import read_public_sheet
 
 from queries.portfolio import PORTFOLIO
-from domain.portfolio_transform import put_acreditation_date, eliminate_duplicate_checks, put_company_name, put_interest_real_rate
+from domain.portfolio_transform import put_acreditation_date, change_sold_to_us_checks_from_crm, put_company_name, put_interest_real_rate
 
-PORTFOLIO_STEPS = [put_acreditation_date, eliminate_duplicate_checks, put_company_name, put_interest_real_rate]
+PORTFOLIO_STEPS = [put_company_name, put_acreditation_date, change_sold_to_us_checks_from_crm, put_interest_real_rate]
 
 COLUMN_MAP = {
     "Empresa":       "Empresa",
@@ -24,6 +24,7 @@ COLUMN_MAP = {
 }
 
 DATE_FIELDS = ("Fecha Acr.", "Fecha Compra")
+SOLD_TO_US_CLIENTS = ("DHF", "CONFINANCE")
 RATE_FIELD = "Tasa"
 
 
@@ -44,6 +45,14 @@ def _to_cell(value):
         return ""
     return value
 
+def eliminate_sold_to_us_checks(rows):
+    result = []
+    for row in rows:
+        client = str(_to_cell(row.get("Cliente")))
+        if client.startswith(SOLD_TO_US_CLIENTS):
+            continue
+        result.append(row)
+    return result
 
 def normalize_stock_market(rows):
     result = []
@@ -59,7 +68,7 @@ def normalize_stock_market(rows):
     return result
 
 
-STOCK_MARKET_STEPS = [normalize_stock_market]
+STOCK_MARKET_STEPS = [eliminate_sold_to_us_checks, normalize_stock_market]
 
 PORTFOLIO_SOURCES = [
     Source("DHF",        lambda: read_tds("DHF", PORTFOLIO),        steps=PORTFOLIO_STEPS),
