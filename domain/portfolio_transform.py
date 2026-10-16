@@ -17,15 +17,20 @@ def put_acreditation_date(rows, today=None):
     return result
 
 
-def eliminate_duplicate_checks(rows):
+def change_sold_to_us_checks_from_crm(rows):
     result = []
     for row in rows:
         destination_acount = row.get("Cuenta Destino")
         origin = row.get("Origen")
         state = row.get("Estado")
 
-        if (origin == "DHF" or origin == "CONFINANCE") and (destination_acount == "5006" or destination_acount == "5011") and (state == "Vendido"):
-            continue
+        if (origin == "DHF" or origin == "CONFINANCE") and (state == "Vendido"):
+            if destination_acount == "5006":
+                row["Origen"] = "BOLSA"
+                row["Empresa"] = "SC1"
+            elif destination_acount == "5011":
+                row["Origen"] = "BOLSA"
+                row["Empresa"] = "PLATINUM"
 
         result.append(row)
     return result

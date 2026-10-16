@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from domain.portfolio_transform import put_acreditation_date, eliminate_duplicate_checks, put_interest_real_rate
+from domain.portfolio_transform import put_acreditation_date, change_sold_to_us_checks_from_crm, put_interest_real_rate
 
 TODAY = date(2026, 8, 4)
 
@@ -42,46 +42,59 @@ def _row(origin="DHF", account="5006", state="Vendido"):
     return {"Origen": origin, "Cuenta Destino": account, "Estado": state}
 
 
-def test_removes_matching_row():
-    assert eliminate_duplicate_checks([_row()]) == []
+def test_sold_to_5006_becomes_sc1():
+    row = _row(account="5006")
+    out = change_sold_to_us_checks_from_crm([row])
+    assert out[0]["Origen"] == "BOLSA" and out[0]["Empresa"] == "SC1"
+
+
+def test_sold_to_5011_becomes_platinum():
+    row = _row(account="5011")
+    out = change_sold_to_us_checks_from_crm([row])
+    assert out[0]["Origen"] == "BOLSA" and out[0]["Empresa"] == "PLATINUM"
+
+
+def test_relabels_for_both_origins():
+    rows = [_row(origin="DHF"), _row(origin="CONFINANCE")]
+    out = change_sold_to_us_checks_from_crm(rows)
+    assert [r["Origen"] for r in out] == ["BOLSA", "BOLSA"]
+    assert [r["Empresa"] for r in out] == ["SC1", "SC1"]
 
 
 def test_keeps_when_origin_differs():
     row = _row(origin="OTRO")
-    assert eliminate_duplicate_checks([row]) == [row]
+    assert change_sold_to_us_checks_from_crm([row]) == [row]
+    assert "Empresa" not in row
 
 
 def test_keeps_when_account_differs():
     row = _row(account="5005")
-    assert eliminate_duplicate_checks([row]) == [row]
+    out = change_sold_to_us_checks_from_crm([row])
+    assert out[0]["Origen"] == "DHF" and "Empresa" not in out[0]
 
 
 def test_keeps_when_state_differs():
     row = _row(state="Depositado")
-    assert eliminate_duplicate_checks([row]) == [row]
+    out = change_sold_to_us_checks_from_crm([row])
+    assert out[0]["Origen"] == "DHF" and "Empresa" not in out[0]
 
 
-def test_removes_for_both_origins():
-    rows = [_row(origin="DHF"), _row(origin="CONFINANCE")]
-    assert eliminate_duplicate_checks(rows) == []
+def test_no_row_is_dropped():
+    rows = [_row(), _row(account="5011"), _row(account="5005"), _row(state="Depositado")]
+    assert len(change_sold_to_us_checks_from_crm(rows)) == 4
 
 
-def test_removes_for_both_accounts():
-    rows = [_row(account="5006"), _row(account="5011")]
-    assert eliminate_duplicate_checks(rows) == []
-
-
-def test_keeps_others_and_preserves_order():
-    keep_state = _row(state="Depositado")
-    dropped = _row()
-    keep_account = _row(account="5005")
-    out = eliminate_duplicate_checks([keep_state, dropped, keep_account])
-    assert out == [keep_state, keep_account]
+def test_keeps_order_and_only_touches_the_sold_ones():
+    otro = _row(state="Depositado")
+    vendido = _row()
+    quinto = _row(account="5005")
+    out = change_sold_to_us_checks_from_crm([otro, vendido, quinto])
+    assert [r["Origen"] for r in out] == ["DHF", "BOLSA", "DHF"]
 
 
 def test_keeps_row_with_missing_keys():
     row = {"Firmante": "X"}
-    assert eliminate_duplicate_checks([row]) == [row]
+    assert change_sold_to_us_checks_from_crm([row]) == [row]
 
 
 def _rate_row(days=360, interest=5, commission=3.2):

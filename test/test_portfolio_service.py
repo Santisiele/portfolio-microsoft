@@ -108,3 +108,53 @@ def test_crm_sold_cheques_are_kept(monkeypatch):
     rows = service.build_portfolio()
     assert [r["Origen"] for r in rows] == ["DHF", "CONFINANCE"]
     assert all(r["Estado"] == "Vendido" for r in rows)
+
+
+def test_sheet_checks_sold_to_us_are_dropped():
+    rows = [{"Cliente": "DHF S.A"}, {"Cliente": "CONFINANCE S.A."}, {"Cliente": "INARMET S A"}]
+    assert service.eliminate_sold_to_us_checks(rows) == [{"Cliente": "INARMET S A"}]
+
+
+def test_sheet_client_without_value_is_kept():
+    import math
+    rows = [{"Importe": 50}, {"Cliente": math.nan}, {"Cliente": ""}]
+    assert len(service.eliminate_sold_to_us_checks(rows)) == 3
+
+
+def test_sheet_client_that_only_contains_the_name_is_kept():
+    rows = [{"Cliente": "GRUPO DHF SA"}]
+    assert service.eliminate_sold_to_us_checks(rows) == rows
+
+
+def test_sheet_keeps_the_order_of_the_remaining_checks():
+    rows = [{"Cliente": "UNO"}, {"Cliente": "DHF S.A"}, {"Cliente": "DOS"}]
+    assert [r["Cliente"] for r in service.eliminate_sold_to_us_checks(rows)] == ["UNO", "DOS"]
+
+
+def _sold_crm_row(account):
+    row = _crm_row()
+    row["Estado"] = "Vendido"
+    row["Cuenta Destino"] = account
+    row["Cliente"] = "INARMET S A"
+    return row
+
+
+def test_crm_check_sold_to_5006_is_shown_as_sc1(monkeypatch):
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [_sold_crm_row("5006")])
+    monkeypatch.setattr(service, "read_public_sheet", lambda url: [])
+    rows = service.build_portfolio()
+    assert [r["Origen"] for r in rows] == ["BOLSA", "BOLSA"]
+    assert [r["Empresa"] for r in rows] == ["SC1", "SC1"]
+
+
+def test_crm_check_sold_to_5011_is_shown_as_platinum(monkeypatch):
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [_sold_crm_row("5011")])
+    monkeypatch.setattr(service, "read_public_sheet", lambda url: [])
+    assert [r["Empresa"] for r in service.build_portfolio()] == ["PLATINUM", "PLATINUM"]
+
+
+def test_crm_check_not_sold_keeps_its_own_company(monkeypatch):
+    monkeypatch.setattr(service, "read_tds", lambda env, query: [_crm_row()])
+    monkeypatch.setattr(service, "read_public_sheet", lambda url: [])
+    rows = service.build_portfolio()
+    assert sorted(r["Empresa"] for r in rows) == ["CRM-CONFINANCE", "CRM-DHF"]
