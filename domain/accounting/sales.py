@@ -3,7 +3,7 @@ from .common import SUBCUENTA_CONFINANCE, CONTRA_SUBCUENTA, subcuenta, line, amo
 SUBCUENTA_SALES = {**SUBCUENTA_CONFINANCE, "4002": 1120097}
 INTEREST_SUBCUENTA = 6000001
 COMMISSION_SUBCUENTA = 6000002
-VAT_SUBCUENTA = 6000003
+VAT_SUBCUENTA = 3300001
 
 
 def _concepto(sale_number):
@@ -39,9 +39,9 @@ def build_sales_entries(rows, mapping=None):
             result.append(line(date, CONTRA_SUBCUENTA, 0, importe, concepto))
         else:
             concepto = _concepto(row["gval_numerodeventa"])
-            interest = amount_after(obs, "INTERESES: $")
-            commission = amount_after(obs, "COMISION: $")
-            vat = amount_after(obs, "IVA: $")
+            interest = amount_after(obs, "INTERESES:")
+            commission = amount_after(obs, "COMISION:")
+            vat = amount_after(obs, "IVA:")
             result.append(line(date, subcta, importe, 0, concepto))
             result.append(line(date, INTEREST_SUBCUENTA, interest, 0, concepto))
             result.append(line(date, COMMISSION_SUBCUENTA, commission, 0, concepto))

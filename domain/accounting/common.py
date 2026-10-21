@@ -30,7 +30,7 @@ def line(date, subcta, debe, haber, concepto):
 
 
 def parse_money(s):
-    s = (s or "").strip()
+    s = (s or "").replace("$", "").strip()
     if not s:
         return 0.0
     last_dot = s.rfind(".")
