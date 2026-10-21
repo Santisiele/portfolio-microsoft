@@ -39,8 +39,8 @@ def build_sales_entries(rows, mapping=None):
             result.append(line(date, CONTRA_SUBCUENTA, 0, importe, concepto))
         else:
             concepto = _concepto(row["gval_numerodeventa"])
-            interest = amount_after(obs, "INTERESES:")
-            commission = amount_after(obs, "COMISION:")
+            interest = amount_after(obs, "INTERESES:") or amount_after(obs, "INTERES:")
+            commission = amount_after(obs, "COMISION:") or amount_after(obs, "COMISIONES:")
             vat = amount_after(obs, "IVA:")
             result.append(line(date, subcta, importe, 0, concepto))
             result.append(line(date, INTEREST_SUBCUENTA, interest, 0, concepto))

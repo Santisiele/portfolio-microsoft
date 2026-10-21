@@ -17,6 +17,7 @@
     stateLabel: document.getElementById("state-label"),
     reset: document.getElementById("reset-filters"),
     verManana: document.getElementById("ver-manana"),
+    download: document.getElementById("download-xlsx"),
   };
   const tbody = document.getElementById("rows");
   const rows = Array.from(tbody.querySelectorAll("tr"));
@@ -152,6 +153,7 @@
 
     els.totalFiltered.textContent = formatAmount(sumCents(visible) / 100);
     els.count.textContent = visible.length;
+    if (els.download) els.download.disabled = visible.length === 0;
     els.originLabel.textContent = origins.length ? "Origen (" + origins.length + ")" : "Origen";
     els.companyLabel.textContent = companies.length ? "Empresa (" + companies.length + ")" : "Empresa";
     els.stateLabel.textContent = states.length ? "Estado (" + states.length + ")" : "Estado";
@@ -161,6 +163,36 @@
     if (origins.length === 1 && originClassByValue[origins[0]]) {
       pill.classList.add(originClassByValue[origins[0]]);
     }
+  }
+
+  function headerText(th) {
+    return th.textContent.replace(/[▲▼]/g, "").trim();
+  }
+
+  function toAOA() {
+    const names = headers.map(headerText);
+    const amountIndex = names.indexOf("Importe");
+    const aoa = [names];
+    rows.forEach(function (tr) {
+      if (tr.style.display === "none") return;
+      aoa.push(Array.from(tr.children).map(function (td, i) {
+        if (i === amountIndex) {
+          const n = parseFloat(tr.dataset.amount);
+          return isNaN(n) ? td.textContent.trim() : n;
+        }
+        return td.textContent.trim();
+      }));
+    });
+    return aoa;
+  }
+
+  function downloadXlsx() {
+    if (typeof XLSX === "undefined") return;
+    const aoa = toAOA();
+    if (aoa.length < 2) return;
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), "Cartera");
+    XLSX.writeFile(wb, "cartera.xlsx");
   }
 
   function resetFilters() {
@@ -236,6 +268,7 @@
   companyBoxes.forEach(function (b) { b.addEventListener("change", apply); });
   stateBoxes.forEach(function (b) { b.addEventListener("change", apply); });
   if (els.reset) els.reset.addEventListener("click", resetFilters);
+  if (els.download) els.download.addEventListener("click", downloadXlsx);
   if (els.verManana) els.verManana.addEventListener("click", function () {
     const d = els.verManana.dataset.next || acrMin;
     if (!d) return;
