@@ -45,7 +45,10 @@
   <div class="d-flex align-items-baseline gap-3 mb-3">
     <h1 class="h3 mb-0">Cartera</h1>
     <span class="text-muted small"><span id="count">{{ rows|length }}</span> cheques</span>
-    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('main.index') }}">← Volver</a>
+    <button id="download-xlsx" type="button" class="btn btn-success btn-sm ms-auto">
+      <i class="bi bi-file-earmark-arrow-down me-1"></i>Descargar xlsx
+    </button>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">← Volver</a>
   </div>
 
   <div class="card shadow-sm mb-3">
@@ -243,5 +246,6 @@
     <p class="text-muted">Sin resultados.</p>
   {% endif %}
 
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="{{ url_for('static', filename='js/portfolio.js') }}"></script>
 {% endblock %}

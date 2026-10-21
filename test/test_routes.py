@@ -269,3 +269,22 @@ def test_availability_shows_the_sheet_date_next_to_the_title(client, monkeypatch
     _login(client)
     html = client.get("/disponibilidades").get_data(as_text=True)
     assert ">Disponibilidades al 30/09</h1>" in html
+
+
+def test_portfolio_has_a_download_button(client, monkeypatch):
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "X", "Importe": 100, "Origen": "DHF"}])
+    _login(client)
+    html = client.get("/portfolio/table").get_data(as_text=True)
+    assert 'id="download-xlsx"' in html
+    assert "Descargar xlsx" in html
+
+
+def test_portfolio_loads_the_xlsx_library(client, monkeypatch):
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "X", "Importe": 100, "Origen": "DHF"}])
+    _login(client)
+    html = client.get("/portfolio/table").get_data(as_text=True)
+    assert "xlsx.full.min.js" in html

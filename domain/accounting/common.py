@@ -49,7 +49,7 @@ def parse_money(s):
 
 def amount_after(text, marker):
     text = text or ""
-    i = text.find(marker)
+    i = text.upper().find(marker.upper())
     if i == -1:
         return 0.0
     start = i + len(marker)

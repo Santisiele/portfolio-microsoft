@@ -157,3 +157,41 @@ def test_both_observation_formats_work_together():
     entries = build_sales_entries([_normal_row(), _row_without_symbol()])
     debits = [e["DEBE"] for e in entries if e["SUBCTA"] == 6000001]
     assert debits == [100.0, 474861.22]
+
+
+MINUSCULA = "Intereses: $1.005.330,75\nComision: $18.724,14\nIva: $3.932,07"
+SINGULAR = "INTERES: 474,861.22\nCOMISION: 288,873.91\nIVA: 110,523.95"
+
+
+def test_amount_after_ignores_case():
+    assert amount_after(MINUSCULA, "INTERESES:") == 1005330.75
+    assert amount_after(MINUSCULA, "COMISION:") == 18724.14
+    assert amount_after(MINUSCULA, "IVA:") == 3932.07
+
+
+def test_sale_with_lowercase_observations_breaks_out_the_amounts():
+    row = _normal_row()
+    row["gval_observaciones"] = MINUSCULA
+    debits = {e["SUBCTA"]: e["DEBE"] for e in build_sales_entries([row]) if e["DEBE"]}
+    assert debits[6000001] == 1005330.75
+    assert debits[6000002] == 18724.14
+    assert debits[3300001] == 3932.07
+
+
+def test_sale_with_singular_interest_breaks_out_the_amount():
+    row = _normal_row()
+    row["gval_observaciones"] = SINGULAR
+    debits = {e["SUBCTA"]: e["DEBE"] for e in build_sales_entries([row]) if e["DEBE"]}
+    assert debits[6000001] == 474861.22
+
+
+def test_plural_interest_is_not_read_as_singular():
+    assert amount_after(SIN_SIMBOLO, "INTERES:") == 0.0
+    assert amount_after(SIN_SIMBOLO, "INTERESES:") == 474861.22
+
+
+def test_sale_with_plural_commission_breaks_out_the_amount():
+    row = _normal_row()
+    row["gval_observaciones"] = "COMISIONES: 1.000,00"
+    debits = {e["SUBCTA"]: e["DEBE"] for e in build_sales_entries([row]) if e["DEBE"]}
+    assert debits[6000002] == 1000.0
