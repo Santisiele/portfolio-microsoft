@@ -243,7 +243,28 @@
       },
       options: {
         plugins: {
-          legend: { position: "right", labels: { boxWidth: 12 } },
+          legend: {
+            position: "right",
+            labels: {
+              boxWidth: 12,
+              generateLabels: function (grafico) {
+                const valores = grafico.data.datasets[0].data;
+                const total = valores.reduce((suma, valor) => suma + valor, 0);
+                return grafico.data.labels.map(function (nombre, i) {
+                  const parte = total ? (valores[i] / total) * 100 : 0;
+                  const color = CHART_COLORS[i % CHART_COLORS.length];
+                  return {
+                    text: nombre + "  " + parte.toFixed(1) + "%",
+                    fillStyle: color,
+                    strokeStyle: color,
+                    lineWidth: 0,
+                    hidden: !grafico.getDataVisibility(i),
+                    index: i,
+                  };
+                });
+              },
+            },
+          },
           tooltip: {
             callbacks: {
               label: function (item) {
