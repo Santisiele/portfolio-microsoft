@@ -349,3 +349,43 @@ def test_audit_logs_the_accounting_tables(client, monkeypatch, caplog):
     entry = _audit(caplog)[-1]
     assert entry["entorno"] == "DHF"
     assert entry["asientos"]["Depósitos"] == 1
+
+
+@pytest.fixture
+def log_dir(tmp_path):
+    from core.audit import logger, setup_file_logging
+    handler = setup_file_logging(str(tmp_path))
+    yield tmp_path
+    if handler:
+        logger.removeHandler(handler)
+
+
+def test_audit_writes_a_file_when_there_is_a_log_dir(client, log_dir):
+    _login(client)
+    client.get("/")
+    archivos = list(log_dir.glob("cartera-*.log"))
+    assert len(archivos) == 1
+    entry = json.loads(archivos[0].read_text(encoding="utf-8").strip().split(" ", 2)[2])
+    assert entry["usuario"] == "Tester" and entry["ruta"] == "/"
+
+
+def test_audit_appends_one_line_per_request(client, log_dir):
+    _login(client)
+    client.get("/")
+    client.get("/")
+    archivo = next(iter(log_dir.glob("cartera-*.log")))
+    assert len(archivo.read_text(encoding="utf-8").strip().splitlines()) == 2
+
+
+def test_audit_file_name_is_monthly():
+    from datetime import date
+    from core.audit import MonthlyFileHandler
+    handler = MonthlyFileHandler("/data")
+    assert handler.path(date(2026, 10, 30)).endswith("cartera-2026-10.log")
+
+
+def test_audit_without_log_dir_does_not_add_a_handler():
+    from core.audit import logger, setup_file_logging
+    antes = len(logger.handlers)
+    assert setup_file_logging("") is None
+    assert len(logger.handlers) == antes

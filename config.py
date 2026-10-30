@@ -28,6 +28,8 @@ RATES_SHEET_ID = os.environ.get("RATES_SHEET_ID", "")
 
 AVAILABILITY_SHEET_ID = os.environ.get("AVAILABILITY_SHEET_ID", "")
 
+LOG_DIR = os.environ.get("LOG_DIR", "")
+
 COMPANY_SUBACCOUNT_SHEET = {
     "DHF":        os.environ.get("COMPANY_SUBACCOUNT_SHEET_DHF", ""),
     "CONFINANCE": os.environ.get("COMPANY_SUBACCOUNT_SHEET_CONFINANCE", ""),

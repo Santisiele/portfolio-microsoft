@@ -1,12 +1,16 @@
 import json
 import logging
+import os
 import time
+from datetime import date
 
 from flask import g, request, session
 
 logger = logging.getLogger("cartera")
+logger.setLevel(logging.INFO)
 SKIPPED_PREFIXES = ("/static",)
 NO_SESSION = "sin sesion"
+FILE_FORMAT = "%(asctime)s %(message)s"
 
 
 def start_request():
@@ -43,3 +47,32 @@ def log_request(response):
     entry.update(getattr(g, "audit", {}))
     logger.info(json.dumps(entry, ensure_ascii=False))
     return response
+
+
+class MonthlyFileHandler(logging.Handler):
+    def __init__(self, directory):
+        super().__init__()
+        self.directory = directory
+
+    def path(self, today=None):
+        name = "cartera-" + (today or date.today()).strftime("%Y-%m") + ".log"
+        return os.path.join(self.directory, name)
+
+    def emit(self, record):
+        try:
+            os.makedirs(self.directory, exist_ok=True)
+            with open(self.path(), "a", encoding="utf-8") as handle:
+                handle.write(self.format(record) + "\n")
+        except Exception:
+            self.handleError(record)
+
+
+def setup_file_logging(directory):
+    if not directory:
+        return None
+    if any(isinstance(h, MonthlyFileHandler) for h in logger.handlers):
+        return None
+    handler = MonthlyFileHandler(directory)
+    handler.setFormatter(logging.Formatter(FILE_FORMAT))
+    logger.addHandler(handler)
+    return handler

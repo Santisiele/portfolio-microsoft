@@ -6,7 +6,7 @@ from cachelib.file import FileSystemCache
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import config
-from core import start_request, log_request
+from core import start_request, log_request, setup_file_logging
 from routes import register_blueprints
 
 app = Flask(__name__)
@@ -18,6 +18,8 @@ app.config["SESSION_CACHELIB"] = FileSystemCache(cache_dir="flask_session", thre
 Session(app)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+
+setup_file_logging(config.LOG_DIR)
 
 app.before_request(start_request)
 app.after_request(log_request)
