@@ -389,3 +389,125 @@ def test_audit_without_log_dir_does_not_add_a_handler():
     antes = len(logger.handlers)
     assert setup_file_logging("") is None
     assert len(logger.handlers) == antes
+
+
+def _historic_rows():
+    return [{"Cliente": "CILBRAKE SRL", "Fecha Pago": "2026-09-01", "Fecha Compra": "2026-08-01",
+             "Firmante": "BARPRAN SRL", "Importe": 511819.49, "Cuit Librador": "30712116516",
+             "Origen": "DHF", "Empresa": "CRM-DHF", "Estado": "Depositado", "Tasa": 31.4}]
+
+
+def _mock_historic(monkeypatch, rows=None, cantidad=1, total=511819.49):
+    import routes.portfolio_historic as rh
+    pedidos = {}
+
+    def pagina(filters, page=1, sources=None, **kwargs):
+        pedidos["filters"] = filters
+        pedidos["page"] = page
+        pedidos["sources"] = sources
+        return [dict(r) for r in (rows if rows is not None else _historic_rows())]
+
+    monkeypatch.setattr(rh, "build_historic_page", pagina)
+    monkeypatch.setattr(rh, "build_historic_totals",
+                        lambda filters, sources=None: {"cantidad": cantidad, "total": total})
+    return pedidos
+
+
+def test_historic_redirects_without_login(client):
+    assert client.get("/cartera-historica").status_code == 302
+
+
+def test_historic_shows_the_rows_and_the_total(client, monkeypatch):
+    _mock_historic(monkeypatch)
+    _login(client)
+    html = client.get("/cartera-historica").get_data(as_text=True)
+    assert "Cartera histórica" in html
+    assert "CILBRAKE SRL" in html
+    assert "30-71211651-6" in html
+    assert "$511.819,49" in html
+    assert "31.40%" in html
+
+
+def test_historic_uses_the_last_twelve_months_by_default(client, monkeypatch):
+    from modules.portfolio_historic.service import default_range
+    pedidos = _mock_historic(monkeypatch)
+    _login(client)
+    client.get("/cartera-historica")
+    desde, hasta = default_range()
+    assert pedidos["filters"]["desde"] == desde
+    assert pedidos["filters"]["hasta"] == hasta
+
+
+def test_historic_passes_the_filters_to_the_query(client, monkeypatch):
+    pedidos = _mock_historic(monkeypatch)
+    _login(client)
+    client.get("/cartera-historica?desde=2017-01-01&hasta=2020-12-31&cliente=CILBRAKE&estado=Vendido")
+    assert pedidos["filters"]["desde"] == "2017-01-01"
+    assert pedidos["filters"]["cliente"] == "CILBRAKE"
+    assert pedidos["filters"]["estados"] == ["Vendido"]
+
+
+def test_historic_reads_one_source_when_it_is_chosen(client, monkeypatch):
+    pedidos = _mock_historic(monkeypatch)
+    _login(client)
+    client.get("/cartera-historica?fuente=DHF")
+    assert pedidos["sources"] == ("DHF",)
+
+
+def test_historic_ignores_an_unknown_source(client, monkeypatch):
+    pedidos = _mock_historic(monkeypatch)
+    _login(client)
+    client.get("/cartera-historica?fuente=INVENTADO")
+    assert pedidos["sources"] == ("DHF", "CONFINANCE", "BOLSA")
+
+
+def test_historic_shows_the_next_page_link(client, monkeypatch):
+    _mock_historic(monkeypatch, cantidad=250)
+    _login(client)
+    html = client.get("/cartera-historica").get_data(as_text=True)
+    assert "Página 1 de 3" in html
+    assert "pagina=2" in html
+    assert "Anterior" not in html
+
+
+def test_historic_keeps_the_filters_in_the_page_links(client, monkeypatch):
+    _mock_historic(monkeypatch, cantidad=250)
+    _login(client)
+    html = client.get("/cartera-historica?cliente=CILBRAKE").get_data(as_text=True)
+    assert "cliente=CILBRAKE" in html
+
+
+def test_historic_without_results_says_so(client, monkeypatch):
+    _mock_historic(monkeypatch, rows=[], cantidad=0, total=0)
+    _login(client)
+    html = client.get("/cartera-historica").get_data(as_text=True)
+    assert "Sin resultados" in html
+
+
+def test_historic_logs_what_it_returned(client, monkeypatch, caplog):
+    _mock_historic(monkeypatch, cantidad=42)
+    _login(client)
+    with caplog.at_level(logging.INFO, logger="cartera"):
+        client.get("/cartera-historica?pagina=2")
+    entry = _audit(caplog)[-1]
+    assert entry["cheques"] == 42 and entry["pagina"] == 2
+
+
+def test_portfolio_has_a_chart_button_and_modal(client, monkeypatch):
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "X", "Importe": 100, "Origen": "DHF"}])
+    _login(client)
+    html = client.get("/portfolio/table").get_data(as_text=True)
+    assert 'id="chart-btn"' in html
+    assert 'id="chart-modal"' in html
+    assert 'id="chart-canvas"' in html
+
+
+def test_portfolio_loads_the_chart_library(client, monkeypatch):
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio",
+                        lambda: [{"Firmante": "X", "Importe": 100, "Origen": "DHF"}])
+    _login(client)
+    html = client.get("/portfolio/table").get_data(as_text=True)
+    assert "chart.umd.min.js" in html

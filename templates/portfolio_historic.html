@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Cartera histórica{% endblock %}
+{% block main_class %}container-fluid px-4 py-4{% endblock %}
+{% block content %}
+
+  {% set columns = ["Cliente", "Fecha Compra", "Fecha Pago", "Fecha Acr.", "Firmante", "Importe", "Cuit Librador", "Origen", "Empresa", "Estado", "Tasa"] %}
+  {% set right_cols = ["Importe"] %}
+  {% set center_cols = ["Cuit Librador", "Fecha Compra", "Fecha Pago", "Fecha Acr.", "Origen", "Empresa", "Estado", "Tasa"] %}
+  {% set origin_class = {"DHF": "origin-dhf", "CONFINANCE": "origin-confinance", "BOLSA": "origin-bolsa"} %}
+  {% set company_class = {"CRM-DHF": "company-dhf", "CRM-CONFINANCE": "company-confinance", "SC1": "company-sc1", "PLATINUM": "company-platinum", "Platinum": "company-platinum", "Confinance": "company-confinance-bolsa"} %}
+  {% set state_class = {
+    "En cartera": "state-en-cartera",
+    "Pendiente": "state-pendiente",
+    "Pendiente de depósito": "state-pendiente-de-deposito",
+    "Vendido": "state-vendido",
+    "Depositado": "state-depositado"
+  } %}
+
+  <div class="d-flex align-items-baseline gap-3 mb-3">
+    <h1 class="h3 mb-0">Cartera histórica</h1>
+    <span class="text-muted small">{{ totals.cantidad }} cheques</span>
+    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('main.index') }}">← Volver</a>
+  </div>
+
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <form method="get" class="filtros d-flex flex-wrap align-items-end gap-3">
+        <div>
+          <label class="form-label small text-muted mb-1" for="f-cuit">CUIT</label>
+          <input id="f-cuit" name="cuit" value="{{ filters.cuit }}" type="search" class="form-control form-control-sm" placeholder="Con o sin guiones…" style="width: 12rem;">
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1" for="f-firmante">Firmante</label>
+          <input id="f-firmante" name="firmante" value="{{ filters.firmante }}" type="search" class="form-control form-control-sm" placeholder="Buscar firmante…" style="width: 12rem;">
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1" for="f-cliente">Cliente</label>
+          <input id="f-cliente" name="cliente" value="{{ filters.cliente }}" type="search" class="form-control form-control-sm" placeholder="Buscar cliente…" style="width: 12rem;">
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1 d-block">Fecha compra</label>
+          <div class="d-flex flex-wrap align-items-center gap-1">
+            <input name="desde" value="{{ filters.desde }}" type="date" class="form-control form-control-sm" style="width: 9.5rem;">
+            <span class="text-muted small">-</span>
+            <input name="hasta" value="{{ filters.hasta }}" type="date" class="form-control form-control-sm" style="width: 9.5rem;">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1 d-block" for="f-fuente">Fuente</label>
+          <select id="f-fuente" name="fuente" class="form-select form-select-sm" style="width: 11rem;">
+            <option value="">Todas</option>
+            {% for f in fuentes %}
+              <option value="{{ f }}" {% if fuente == f %}selected{% endif %}>{{ f }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label small text-muted mb-1 d-block">Estado</label>
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                    data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+              Estado{% if filters.estados %} ({{ filters.estados|length }}){% endif %}
+            </button>
+            <div class="dropdown-menu filter-menu">
+              {% for estado in estados %}
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="estado" value="{{ estado }}"
+                         id="estado-{{ loop.index }}" {% if estado in filters.estados %}checked{% endif %}>
+                  <label class="form-check-label small" for="estado-{{ loop.index }}">
+                    <span class="tag {{ state_class.get(estado, '') }}">{{ estado }}</span>
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="ms-md-auto d-flex align-items-center gap-2">
+          <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search me-1"></i>Buscar</button>
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('historic.index') }}">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Resetear filtros
+          </a>
+        </div>
+      </form>
+
+      <div class="d-flex flex-wrap gap-4 mt-3 pt-3 border-top">
+        <div>
+          <div class="text-muted small">Cheques</div>
+          <div class="fs-5 fw-semibold">{{ totals.cantidad }}</div>
+        </div>
+        <div>
+          <div class="text-muted small">Total</div>
+          <div class="fs-5 fw-semibold"><span class="total-pill">{{ total_ars }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if rows %}
+    <div class="card shadow-sm">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-striped table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                {% for col in columns %}
+                  <th class="text-nowrap {% if col in right_cols %}text-end{% elif col in center_cols %}text-center{% endif %}">{{ col }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in rows %}
+                <tr>
+                  {% for col in columns %}
+                    {% set value = row.get(col) %}
+                    {% if col == "Origen" %}
+                      <td class="text-center">{% if value %}<span class="tag {{ origin_class.get(value, '') }}">{{ value }}</span>{% endif %}</td>
+                    {% elif col == "Empresa" %}
+                      <td class="text-center">{% if value %}<span class="tag {{ company_class.get(value, '') }}">{{ value }}</span>{% endif %}</td>
+                    {% elif col == "Estado" %}
+                      <td class="text-center">{% if value %}<span class="tag {{ state_class.get(value, '') }}">{{ value }}</span>{% endif %}</td>
+                    {% else %}
+                      <td class="text-nowrap {% if col in right_cols %}text-end{% elif col in center_cols %}text-center{% endif %}">{{ value if value is not none else "" }}</td>
+                    {% endif %}
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    {% set args = request.args.to_dict(flat=False) %}
+    <nav class="d-flex align-items-center gap-2 mt-3">
+      {% if page > 1 %}
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('historic.index', **dict(args, pagina=page - 1)) }}">← Anterior</a>
+      {% endif %}
+      <span class="text-muted small">Página {{ page }} de {{ paginas }}</span>
+      {% if page < paginas %}
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('historic.index', **dict(args, pagina=page + 1)) }}">Siguiente →</a>
+      {% endif %}
+    </nav>
+  {% else %}
+    <p class="text-muted">Sin resultados.</p>
+  {% endif %}
+
+{% endblock %}

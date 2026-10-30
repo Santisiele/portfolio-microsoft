@@ -43,6 +43,11 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'historic.index' %}active{% endif %}" href="{{ url_for('historic.index') }}">
+              <i class="bi bi-clock-history me-2"></i>Cartera histórica
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link {% if request.endpoint == 'accounting.dhf' %}active{% endif %}" href="{{ url_for('accounting.dhf') }}">
               <i class="bi bi-bank me-2"></i>Asientos DHF
             </a>

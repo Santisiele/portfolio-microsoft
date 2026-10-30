@@ -45,7 +45,11 @@
   <div class="d-flex align-items-baseline gap-3 mb-3">
     <h1 class="h3 mb-0">Cartera</h1>
     <span class="text-muted small"><span id="count">{{ rows|length }}</span> cheques</span>
-    <button id="download-xlsx" type="button" class="btn btn-success btn-sm ms-auto">
+    <button id="chart-btn" type="button" class="btn btn-outline-primary btn-sm ms-auto"
+            data-bs-toggle="modal" data-bs-target="#chart-modal">
+      <i class="bi bi-pie-chart me-1"></i>Firmantes
+    </button>
+    <button id="download-xlsx" type="button" class="btn btn-success btn-sm">
       <i class="bi bi-file-earmark-arrow-down me-1"></i>Descargar xlsx
     </button>
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">← Volver</a>
@@ -246,6 +250,23 @@
     <p class="text-muted">Sin resultados.</p>
   {% endif %}
 
+  <div class="modal fade" id="chart-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="h5 modal-title mb-0">Firmantes</h2>
+          <span class="text-muted small ms-2" id="chart-subtitle"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <canvas id="chart-canvas" height="320"></canvas>
+          <p id="chart-empty" class="text-muted mb-0 d-none">Sin cheques para graficar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="{{ url_for('static', filename='js/portfolio.js') }}"></script>
 {% endblock %}
