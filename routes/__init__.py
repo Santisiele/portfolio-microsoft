@@ -5,6 +5,7 @@ from .accounting_entry import bp as accounting_bp
 from .financial_panel import bp as panel_bp
 from .rates import bp as rates_bp
 from .availability import bp as availability_bp
+from .portfolio_historic import bp as historic_bp
 
 
 def register_blueprints(app):
@@ -15,3 +16,4 @@ def register_blueprints(app):
     app.register_blueprint(panel_bp)
     app.register_blueprint(rates_bp)
     app.register_blueprint(availability_bp)
+    app.register_blueprint(historic_bp)

@@ -18,6 +18,10 @@
     reset: document.getElementById("reset-filters"),
     verManana: document.getElementById("ver-manana"),
     download: document.getElementById("download-xlsx"),
+    chartModal: document.getElementById("chart-modal"),
+    chartCanvas: document.getElementById("chart-canvas"),
+    chartEmpty: document.getElementById("chart-empty"),
+    chartSubtitle: document.getElementById("chart-subtitle"),
   };
   const tbody = document.getElementById("rows");
   const rows = Array.from(tbody.querySelectorAll("tr"));
@@ -195,6 +199,65 @@
     XLSX.writeFile(wb, "cartera.xlsx");
   }
 
+  const CHART_COLORS = ["#0d6efd", "#b10202", "#11734b", "#5a3286", "#fd7e14", "#0a53a8",
+                        "#d63384", "#215a6c", "#6c757d", "#20c997", "#adb5bd"];
+  const TOP_SIGNERS = 10;
+  let chart = null;
+
+  function signerTotals() {
+    const index = headers.map(headerText).indexOf("Firmante");
+    const totals = new Map();
+    rows.forEach(function (tr) {
+      if (tr.style.display === "none") return;
+      const nombre = index === -1 ? "" : tr.children[index].textContent.trim();
+      const clave = nombre || "Sin firmante";
+      totals.set(clave, (totals.get(clave) || 0) + (parseFloat(tr.dataset.amount) || 0));
+    });
+    return Array.from(totals.entries()).sort((a, b) => b[1] - a[1]);
+  }
+
+  function topSigners(totals) {
+    if (totals.length <= TOP_SIGNERS + 1) return totals;
+    const resto = totals.slice(TOP_SIGNERS).reduce((suma, par) => suma + par[1], 0);
+    return totals.slice(0, TOP_SIGNERS).concat([["Otros", resto]]);
+  }
+
+  function drawChart() {
+    if (typeof Chart === "undefined" || !els.chartCanvas) return;
+    const totals = signerTotals();
+    const vacio = totals.length === 0;
+    els.chartEmpty.classList.toggle("d-none", !vacio);
+    els.chartCanvas.classList.toggle("d-none", vacio);
+    if (els.chartSubtitle) {
+      els.chartSubtitle.textContent = vacio ? "" : totals.length + " firmantes";
+    }
+    if (chart) chart.destroy();
+    if (vacio) return;
+
+    const datos = topSigners(totals);
+    chart = new Chart(els.chartCanvas, {
+      type: "pie",
+      data: {
+        labels: datos.map((par) => par[0]),
+        datasets: [{ data: datos.map((par) => par[1]), backgroundColor: CHART_COLORS }],
+      },
+      options: {
+        plugins: {
+          legend: { position: "right", labels: { boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              label: function (item) {
+                const total = item.dataset.data.reduce((a, b) => a + b, 0);
+                const parte = total ? (item.parsed / total) * 100 : 0;
+                return item.label + ": " + formatAmount(item.parsed) + " (" + parte.toFixed(1) + "%)";
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   function resetFilters() {
     els.cuit.value = "";
     els.firmante.value = "";
@@ -269,6 +332,7 @@
   stateBoxes.forEach(function (b) { b.addEventListener("change", apply); });
   if (els.reset) els.reset.addEventListener("click", resetFilters);
   if (els.download) els.download.addEventListener("click", downloadXlsx);
+  if (els.chartModal) els.chartModal.addEventListener("shown.bs.modal", drawChart);
   if (els.verManana) els.verManana.addEventListener("click", function () {
     const d = els.verManana.dataset.next || acrMin;
     if (!d) return;

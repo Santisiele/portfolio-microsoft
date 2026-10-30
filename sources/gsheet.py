@@ -10,6 +10,11 @@ def read_public_sheet(csv_url):
     return df.to_dict(orient="records")
 
 
+def read_tab_records(sheet_id, gid):
+    df = pd.read_csv(EXPORT_CSV.format(sheet_id=sheet_id, gid=gid), dtype=str).fillna("")
+    return df.to_dict(orient="records")
+
+
 def read_tab_grid(sheet_id, gid, cell_range=None):
     if cell_range:
         url = EXPORT_RANGE.format(sheet_id=sheet_id, gid=gid, cell_range=cell_range)
