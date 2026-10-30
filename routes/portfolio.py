@@ -2,6 +2,7 @@ from flask import Blueprint, session, redirect, url_for, render_template
 from modules.portfolio.service import build_portfolio
 from presentation import format_dates, format_cuits, format_states, format_percentages
 from domain.date_table import next_business_day
+from core import record, count_by
 
 bp = Blueprint("portfolio", __name__)
 
@@ -14,6 +15,7 @@ def portfolio_table():
     if guard:
         return guard
     rows = build_portfolio()
+    record(cheques=len(rows), origenes=count_by(rows, "Origen"))
     rows = format_dates(rows)
     rows = format_cuits(rows)
     rows = format_states(rows)

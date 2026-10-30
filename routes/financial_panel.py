@@ -2,6 +2,7 @@ from flask import Blueprint, session, redirect, url_for, render_template
 
 from modules.financial_panel.service import build_financial_panel
 from presentation import format_ars
+from core import record
 
 bp = Blueprint("panel", __name__)
 
@@ -43,4 +44,5 @@ def index():
                    "cards": _cards(panel["guaranteed"])})
     groups.append({"id": "cuenta-corriente", "title": "Cuenta corriente",
                    "cards": _cards(panel["checking_account"])})
+    record(grupos={g["title"]: len(g["cards"]) for g in groups})
     return render_template("financial_panel.html", groups=groups)
