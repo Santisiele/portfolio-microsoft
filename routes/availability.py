@@ -2,6 +2,7 @@ from flask import Blueprint, session, redirect, url_for, render_template
 
 from modules.availability.service import build_availability
 from presentation import format_sheet_values, format_ars
+from core import record
 
 bp = Blueprint("availability", __name__)
 
@@ -21,4 +22,5 @@ def index():
     if data:
         format_sheet_values(data["rows"], data["columns"])
         data["cheques"] = format_ars(data["cheques"])
+    record(empresas=len(data.get("rows", [])), fecha=data.get("date", ""))
     return render_template("availability.html", data=data, text_columns=TEXT_COLUMNS)

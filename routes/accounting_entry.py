@@ -2,6 +2,7 @@ from flask import Blueprint, session, redirect, url_for, render_template
 
 from modules.accounting_entry.service import build_env_entries
 from presentation import format_dates, format_amounts
+from core import record
 
 bp = Blueprint("accounting", __name__)
 
@@ -25,6 +26,7 @@ def _render(env, title):
     for t in tables:
         t["rows"] = format_dates(t["rows"], columns=["FECH"])
         t["rows"] = format_amounts(t["rows"], columns=["DEBE", "HABER"])
+    record(entorno=env, asientos={t["title"]: len(t["rows"]) for t in tables})
     return render_template("accounting.html", title=title, tables=tables, env=env.lower())
 
 

@@ -1,3 +1,6 @@
+import json
+import logging
+
 import pytest
 from decimal import Decimal
 
@@ -288,3 +291,61 @@ def test_portfolio_loads_the_xlsx_library(client, monkeypatch):
     _login(client)
     html = client.get("/portfolio/table").get_data(as_text=True)
     assert "xlsx.full.min.js" in html
+
+
+def _audit(caplog):
+    return [json.loads(r.getMessage()) for r in caplog.records if r.name == "cartera"]
+
+
+def test_audit_logs_user_route_and_status(client, caplog):
+    _login(client)
+    with caplog.at_level(logging.INFO, logger="cartera"):
+        client.get("/")
+    entry = _audit(caplog)[-1]
+    assert entry["usuario"] == "Tester"
+    assert entry["ruta"] == "/"
+    assert entry["estado"] == 200
+    assert isinstance(entry["ms"], int)
+
+
+def test_audit_logs_what_the_portfolio_returned(client, monkeypatch, caplog):
+    import routes.portfolio as rp
+    monkeypatch.setattr(rp, "build_portfolio", lambda: [
+        {"Firmante": "A", "Importe": 1, "Origen": "DHF"},
+        {"Firmante": "B", "Importe": 2, "Origen": "BOLSA"},
+        {"Firmante": "C", "Importe": 3, "Origen": "BOLSA"},
+    ])
+    _login(client)
+    with caplog.at_level(logging.INFO, logger="cartera"):
+        client.get("/portfolio/table")
+    entry = _audit(caplog)[-1]
+    assert entry["cheques"] == 3
+    assert entry["origenes"] == {"DHF": 1, "BOLSA": 2}
+
+
+def test_audit_logs_requests_without_session(client, caplog):
+    with caplog.at_level(logging.INFO, logger="cartera"):
+        client.get("/portfolio/table")
+    entry = _audit(caplog)[-1]
+    assert entry["usuario"] == "sin sesion"
+    assert entry["estado"] == 302
+
+
+def test_audit_skips_static_files(client, caplog):
+    with caplog.at_level(logging.INFO, logger="cartera"):
+        client.get("/static/js/portfolio.js")
+    assert _audit(caplog) == []
+
+
+def test_audit_logs_the_accounting_tables(client, monkeypatch, caplog):
+    import routes.accounting_entry as ra
+    monkeypatch.setattr(ra, "build_env_entries", lambda env: {
+        "deposits": [{"FECH": "01/01/2026"}], "sales": [], "collections": [],
+        "purchases": [], "tax_documents": [], "payments": [], "pending": [], "rejected": [],
+    })
+    _login(client)
+    with caplog.at_level(logging.INFO, logger="cartera"):
+        client.get("/accounting/dhf")
+    entry = _audit(caplog)[-1]
+    assert entry["entorno"] == "DHF"
+    assert entry["asientos"]["Depósitos"] == 1
