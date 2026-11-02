@@ -23,6 +23,7 @@ HOLIDAYS_AR = {
     "2026-10-12": "Día de la Raza",
     "2026-11-06": "Día del Empleado Bancario",
     "2026-11-09": "Visita del Papa",
+    "2026-11-10": "Visita del Papa",
     "2026-11-23": "Soberanía Nacional",
     "2026-12-07": "No laborable turístico",
     "2026-12-08": "Inmaculada Concepción",
