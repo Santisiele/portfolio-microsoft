@@ -63,3 +63,18 @@ def test_non_business_day_saturday():
 
 def test_non_business_day_holiday():
     assert calculate_acreditation_from_payment(date(2026, 7, 9)) == date(2026, 7, 15)
+
+
+def test_the_pope_visit_is_not_a_business_day():
+    from domain.date_table import build_calendar
+    calendario = build_calendar()
+    for dia in (date(2026, 11, 9), date(2026, 11, 10)):
+        fila = calendario[calendario["date"] == dia].iloc[0]
+        assert fila["is_holiday"] == 1 and fila["is_business_day"] == 0
+
+
+def test_acreditation_skips_the_pope_visit():
+    from domain.date_table import build_calendar, calculate_acreditation_from_payment
+    calendario = build_calendar()
+    assert calculate_acreditation_from_payment(date(2026, 11, 4), calendar=calendario) == date(2026, 11, 11)
+    assert calculate_acreditation_from_payment(date(2026, 11, 5), calendar=calendario) == date(2026, 11, 12)
