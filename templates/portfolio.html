@@ -46,8 +46,12 @@
     <h1 class="h3 mb-0">Cartera</h1>
     <span class="text-muted small"><span id="count">{{ rows|length }}</span> cheques</span>
     <button id="chart-btn" type="button" class="btn btn-outline-primary btn-sm ms-auto"
-            data-bs-toggle="modal" data-bs-target="#chart-modal">
+            data-bs-toggle="modal" data-bs-target="#chart-modal" data-column="Firmante" data-title="Firmantes">
       <i class="bi bi-pie-chart me-1"></i>Firmantes
+    </button>
+    <button id="chart-btn-clientes" type="button" class="btn btn-outline-primary btn-sm"
+            data-bs-toggle="modal" data-bs-target="#chart-modal" data-column="Cliente" data-title="Clientes">
+      <i class="bi bi-pie-chart me-1"></i>Clientes
     </button>
     <button id="download-xlsx" type="button" class="btn btn-success btn-sm">
       <i class="bi bi-file-earmark-arrow-down me-1"></i>Descargar xlsx
@@ -254,7 +258,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 class="h5 modal-title mb-0">Firmantes</h2>
+          <h2 class="h5 modal-title mb-0" id="chart-title">Firmantes</h2>
           <span class="text-muted small ms-2" id="chart-subtitle"></span>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>

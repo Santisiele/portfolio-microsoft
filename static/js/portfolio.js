@@ -22,6 +22,7 @@
     chartCanvas: document.getElementById("chart-canvas"),
     chartEmpty: document.getElementById("chart-empty"),
     chartSubtitle: document.getElementById("chart-subtitle"),
+    chartTitle: document.getElementById("chart-title"),
   };
   const tbody = document.getElementById("rows");
   const rows = Array.from(tbody.querySelectorAll("tr"));
@@ -204,13 +205,13 @@
   const TOP_SIGNERS = 10;
   let chart = null;
 
-  function signerTotals() {
-    const index = headers.map(headerText).indexOf("Firmante");
+  function columnTotals(columna) {
+    const index = headers.map(headerText).indexOf(columna);
     const totals = new Map();
     rows.forEach(function (tr) {
       if (tr.style.display === "none") return;
       const nombre = index === -1 ? "" : tr.children[index].textContent.trim();
-      const clave = nombre || "Sin firmante";
+      const clave = nombre || "Sin dato";
       totals.set(clave, (totals.get(clave) || 0) + (parseFloat(tr.dataset.amount) || 0));
     });
     return Array.from(totals.entries()).sort((a, b) => b[1] - a[1]);
@@ -222,14 +223,14 @@
     return totals.slice(0, TOP_SIGNERS).concat([["Otros", resto]]);
   }
 
-  function drawChart() {
+  function drawChart(columna) {
     if (typeof Chart === "undefined" || !els.chartCanvas) return;
-    const totals = signerTotals();
+    const totals = columnTotals(columna);
     const vacio = totals.length === 0;
     els.chartEmpty.classList.toggle("d-none", !vacio);
     els.chartCanvas.classList.toggle("d-none", vacio);
     if (els.chartSubtitle) {
-      els.chartSubtitle.textContent = vacio ? "" : totals.length + " firmantes";
+      els.chartSubtitle.textContent = vacio ? "" : totals.length + " en total";
     }
     if (chart) chart.destroy();
     if (vacio) return;
@@ -353,7 +354,16 @@
   stateBoxes.forEach(function (b) { b.addEventListener("change", apply); });
   if (els.reset) els.reset.addEventListener("click", resetFilters);
   if (els.download) els.download.addEventListener("click", downloadXlsx);
-  if (els.chartModal) els.chartModal.addEventListener("shown.bs.modal", drawChart);
+  if (els.chartModal) {
+    els.chartModal.addEventListener("shown.bs.modal", function (evento) {
+      const boton = evento.relatedTarget;
+      const columna = (boton && boton.dataset.column) || "Firmante";
+      if (els.chartTitle && boton && boton.dataset.title) {
+        els.chartTitle.textContent = boton.dataset.title;
+      }
+      drawChart(columna);
+    });
+  }
   if (els.verManana) els.verManana.addEventListener("click", function () {
     const d = els.verManana.dataset.next || acrMin;
     if (!d) return;
