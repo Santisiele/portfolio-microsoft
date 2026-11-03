@@ -64,12 +64,32 @@
 
   const onlyDigits = (s) => (s || "").replace(/\D/g, "");
 
+  function normalizeName(texto) {
+    const limpio = (texto || "")
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .toUpperCase().replace(/[.,]/g, " ").replace(/\s+/g, " ").trim();
+    const sueltas = [];
+    const salida = [];
+    limpio.split(" ").forEach(function (token) {
+      if (token.length === 1 && /[A-Z]/.test(token)) {
+        sueltas.push(token);
+        return;
+      }
+      if (sueltas.length) { salida.push(sueltas.join("")); sueltas.length = 0; }
+      salida.push(token);
+    });
+    if (sueltas.length) salida.push(sueltas.join(""));
+    return salida.join(" ");
+  }
+
   function formatAmount(n) {
     return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   rows.forEach(function (tr) {
     tr.dataset.cuitNorm = onlyDigits(tr.dataset.cuit);
+    tr.dataset.firmanteNorm = normalizeName(tr.dataset.firmante);
+    tr.dataset.clienteNorm = normalizeName(tr.dataset.cliente);
   });
 
   document.querySelectorAll(".js-amount").forEach(function (td) {
@@ -125,8 +145,8 @@
   function apply() {
     const onlyGuaranteed = els.guaranteed && els.guaranteed.checked;
     const cuitQ = onlyDigits(els.cuit.value);
-    const firmanteQ = els.firmante.value.trim().toLowerCase();
-    const clienteQ = els.cliente.value.trim().toLowerCase();
+    const firmanteQ = normalizeName(els.firmante.value);
+    const clienteQ = normalizeName(els.cliente.value);
     const acrFrom = els.acrFrom ? els.acrFrom.value : "";
     const acrTo = els.acrTo ? els.acrTo.value : "";
     const compraFrom = els.compraFrom ? els.compraFrom.value : "";
@@ -142,8 +162,8 @@
     rows.forEach(function (tr) {
       const inBase = !onlyGuaranteed || isGuaranteed(tr);
       const okCuit = !cuitQ || tr.dataset.cuitNorm.indexOf(cuitQ) !== -1;
-      const okFirmante = !firmanteQ || tr.dataset.firmante.indexOf(firmanteQ) !== -1;
-      const okCliente = !clienteQ || tr.dataset.cliente.indexOf(clienteQ) !== -1;
+      const okFirmante = !firmanteQ || tr.dataset.firmanteNorm.indexOf(firmanteQ) !== -1;
+      const okCliente = !clienteQ || tr.dataset.clienteNorm.indexOf(clienteQ) !== -1;
       const okOrigin = origins.length === 0 || origins.indexOf(tr.dataset.origin) !== -1;
       const okCompany = companies.length === 0 || companies.indexOf(tr.dataset.company) !== -1;
       const okState = states.length === 0 || states.indexOf(tr.dataset.state) !== -1;
@@ -207,14 +227,24 @@
 
   function columnTotals(columna) {
     const index = headers.map(headerText).indexOf(columna);
-    const totals = new Map();
+    const grupos = new Map();
     rows.forEach(function (tr) {
       if (tr.style.display === "none") return;
-      const nombre = index === -1 ? "" : tr.children[index].textContent.trim();
-      const clave = nombre || "Sin dato";
-      totals.set(clave, (totals.get(clave) || 0) + (parseFloat(tr.dataset.amount) || 0));
+      const original = index === -1 ? "" : tr.children[index].textContent.trim();
+      const nombre = original || "Sin dato";
+      const clave = normalizeName(nombre) || nombre;
+      const grupo = grupos.get(clave) || { total: 0, nombres: new Map() };
+      grupo.total += parseFloat(tr.dataset.amount) || 0;
+      grupo.nombres.set(nombre, (grupo.nombres.get(nombre) || 0) + 1);
+      grupos.set(clave, grupo);
     });
-    return Array.from(totals.entries()).sort((a, b) => b[1] - a[1]);
+    return Array.from(grupos.values())
+      .map(function (grupo) {
+        const nombres = Array.from(grupo.nombres.entries());
+        nombres.sort((a, b) => b[1] - a[1] || b[0].length - a[0].length);
+        return [nombres[0][0], grupo.total];
+      })
+      .sort((a, b) => b[1] - a[1]);
   }
 
   function topSigners(totals) {
