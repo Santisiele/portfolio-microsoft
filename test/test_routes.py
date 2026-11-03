@@ -500,8 +500,11 @@ def test_portfolio_has_a_chart_button_and_modal(client, monkeypatch):
     _login(client)
     html = client.get("/portfolio/table").get_data(as_text=True)
     assert 'id="chart-btn"' in html
+    assert 'id="chart-btn-clientes"' in html
     assert 'id="chart-modal"' in html
     assert 'id="chart-canvas"' in html
+    assert 'data-column="Firmante"' in html
+    assert 'data-column="Cliente"' in html
 
 
 def test_portfolio_loads_the_chart_library(client, monkeypatch):
